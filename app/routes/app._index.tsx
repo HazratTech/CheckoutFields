@@ -259,19 +259,19 @@ export default function Index() {
                     Subscription Plan
                   </Text>
                   {hasProPlan ? (
-                    <Banner status="success">
+                    <Banner tone="success">
                       You are on the <strong>Pro Plan ($12.99/mo)</strong>. Unlimited checkout fields and priority support are active.
                     </Banner>
                   ) : (
                     <BlockStack gap="300">
-                      <Banner status="info">
+                      <Banner tone="info">
                         Free tier active. Upgrade to Pro for unlimited fields, survey attribution, and conditional logic.
                       </Banner>
                       <BlockStack gap="100">
                         <Text as="p" variant="headingSm">
                           Pro Plan — $12.99 / month
                         </Text>
-                        <Text as="p" tone="subdued" size="small">
+                        <Text as="p" tone="subdued" variant="bodySm">
                           Includes a 7-day free trial. Cancel anytime.
                         </Text>
                       </BlockStack>
@@ -298,7 +298,7 @@ export default function Index() {
                     <Tag>Advanced</Tag>
                     <Tag>Shopify Plus</Tag>
                   </InlineStack>
-                  <Text as="p" size="small" tone="subdued">
+                  <Text as="p" variant="bodySm" tone="subdued">
                     Works across all checkout steps on Plus, and on Thank You / Order Status pages for all standard plans.
                   </Text>
                 </BlockStack>
