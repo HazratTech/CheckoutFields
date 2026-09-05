@@ -11,11 +11,11 @@ module = "./src/Checkout.jsx"
 target = "purchase.checkout.block.render"
 
 [[extensions.targeting]]
-module = "./src/Checkout.jsx"
+module = "./src/ThankYou.jsx"
 target = "purchase.thank-you.block.render"
 
 [[extensions.targeting]]
-module = "./src/Checkout.jsx"
+module = "./src/OrderStatus.jsx"
 target = "customer-account.order-status.block.render"
 
 [extensions.capabilities]
