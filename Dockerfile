@@ -5,8 +5,8 @@ WORKDIR /app
 # Step 1: Install all dependencies (including dev for building Vite/Remix)
 FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Step 2: Build the Remix app and generate Prisma client
 FROM base AS builder
