@@ -151,10 +151,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   // Handle Upgrade
   try {
+    const cleanShop = session.shop.replace(".myshopify.com", "");
     return await billing.request({
       plan: MONTHLY_PLAN,
       isTest: process.env.NODE_ENV !== "production",
-      returnUrl: `${process.env.SHOPIFY_APP_URL}/app`,
+      returnUrl: `https://admin.shopify.com/store/${cleanShop}/apps/checkoutfields`,
     });
   } catch (error: any) {
     if (error instanceof Response) {
