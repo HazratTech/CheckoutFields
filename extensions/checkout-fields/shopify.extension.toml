@@ -1,4 +1,4 @@
-api_version = "2026-10"
+api_version = "2025-07"
 
 [[extensions]]
 name = "CheckoutFields"
@@ -10,18 +10,15 @@ type = "ui_extension"
 module = "./src/Checkout.jsx"
 target = "purchase.checkout.block.render"
 
-[[extensions.targeting]]
-module = "./src/ThankYou.jsx"
-target = "purchase.thank-you.block.render"
-
-[[extensions.targeting]]
-module = "./src/OrderStatus.jsx"
-target = "customer-account.order-status.block.render"
-
 [extensions.capabilities]
 api_access = true
 network_access = false
 block_progress = true
+
+[[extensions.metafields]]
+namespace = "checkout_fields"
+key = "plan"
+
 
 [extensions.settings]
 [[extensions.settings.fields]]
@@ -34,7 +31,7 @@ description = "Label displayed above the input (e.g., Gift Message, Delivery Not
 key = "field_type"
 type = "single_line_text_field"
 name = "Field Type"
-description = "Options: text, multiline, select, checkbox, number (defaults to text)"
+description = "Free: text, multiline | Pro Plan: select, checkbox, number"
 
 [[extensions.settings.fields]]
 key = "field_placeholder"
@@ -51,14 +48,14 @@ description = "Name saved in Order Note Attributes (e.g., gift_message, vat_numb
 [[extensions.settings.fields]]
 key = "field_required"
 type = "boolean"
-name = "Required Field"
-description = "Enforce customer input before proceeding"
+name = "Required Field (Pro Plan)"
+description = "Block checkout until filled (Pro Plan feature - also requires 'Allow app to block checkout' toggle above)"
 
 [[extensions.settings.fields]]
 key = "select_options"
 type = "multi_line_text_field"
-name = "Dropdown Options"
-description = "Comma or newline separated options (used only if Field Type is select)"
+name = "Dropdown Options (Pro Plan)"
+description = "Comma or newline separated options (Used only when Field Type is select)"
 
 [[extensions.settings.fields]]
 key = "field_help_text"
