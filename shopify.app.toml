@@ -2,7 +2,7 @@
 
 client_id = "0a84ae25144e84121165e5a3c90143ea"
 name = "CheckoutFields"
-application_url = "https://shopify.dev/apps/default-app-home"
+application_url = "https://checkoutfields.relayworks.dev"
 embedded = true
 
 [build]
@@ -16,4 +16,8 @@ api_version = "2025-07"
 scopes = "read_orders,write_orders"
 
 [auth]
-redirect_urls = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
+redirect_urls = [
+  "https://checkoutfields.relayworks.dev/auth/callback",
+  "https://checkoutfields.relayworks.dev/auth/shopify/callback",
+  "https://checkoutfields.relayworks.dev/api/auth/callback"
+]
