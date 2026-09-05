@@ -24,8 +24,45 @@ import { ExternalIcon } from "@shopify/polaris-icons";
 import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate, MONTHLY_PLAN } from "../shopify.server";
 
+async function getAppDetails(admin: any) {
+  let isPartnerDev = false;
+  let shopId: string | null = null;
+  let appHandle = "checkoutfields-4";
+
+  try {
+    const res = await admin.graphql(`
+      query {
+        shop {
+          id
+          plan {
+            partnerDevelopment
+          }
+        }
+        currentAppInstallation {
+          app {
+            handle
+          }
+        }
+      }
+    `);
+    const data: any = await res.json();
+    shopId = data?.data?.shop?.id || null;
+    isPartnerDev = Boolean(data?.data?.shop?.plan?.partnerDevelopment);
+    if (data?.data?.currentAppInstallation?.app?.handle) {
+      appHandle = data.data.currentAppInstallation.app.handle;
+    }
+  } catch (err) {
+    console.error("Failed to query shop details:", err);
+  }
+
+  const isTest = process.env.NODE_ENV !== "production" || isPartnerDev;
+
+  return { shopId, isPartnerDev, appHandle, isTest };
+}
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, billing, admin } = await authenticate.admin(request);
+  const { shopId, appHandle, isTest } = await getAppDetails(admin);
 
   let hasProPlan = false;
   let subscriptionId: string | null = null;
@@ -33,21 +70,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const billingCheck = await billing.check({
       plans: [MONTHLY_PLAN],
-      isTest: process.env.NODE_ENV !== "production",
+      isTest,
     });
     hasProPlan = billingCheck.hasActivePayment;
     subscriptionId = billingCheck.appSubscriptions?.[0]?.id || null;
   } catch (error) {
+    console.error("Billing check error:", error);
     hasProPlan = false;
   }
 
   // Sync plan status to shop app metafield so checkout extension enforces limits
-  try {
-    const shopQuery = await admin.graphql(`query { shop { id } }`);
-    const shopData: any = await shopQuery.json();
-    const shopId = shopData?.data?.shop?.id;
-
-    if (shopId) {
+  if (shopId) {
+    try {
       await admin.graphql(
         `#graphql
         mutation SetPlanMetafield($metafields: [MetafieldsSetInput!]!) {
@@ -71,20 +105,22 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           },
         }
       );
+    } catch (err) {
+      console.error("Metafield sync error:", err);
     }
-  } catch (err) {
-    console.error("Metafield sync error:", err);
   }
 
   return json({
     shop: session.shop,
     hasProPlan,
     subscriptionId,
+    appHandle,
   });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { billing, session, admin } = await authenticate.admin(request);
+  const { shopId, appHandle, isTest } = await getAppDetails(admin);
   const formData = await request.formData();
   const intent = formData.get("_action");
 
@@ -93,22 +129,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     try {
       const billingCheck = await billing.check({
         plans: [MONTHLY_PLAN],
-        isTest: process.env.NODE_ENV !== "production",
+        isTest,
       });
 
       const subscription = billingCheck.appSubscriptions?.[0];
       if (subscription?.id) {
         await billing.cancel({
           subscriptionId: subscription.id,
-          isTest: process.env.NODE_ENV !== "production",
+          isTest,
           prorate: true,
         });
       }
 
       // Sync metafield back to free
-      const shopQuery = await admin.graphql(`query { shop { id } }`);
-      const shopData: any = await shopQuery.json();
-      const shopId = shopData?.data?.shop?.id;
       if (shopId) {
         await admin.graphql(
           `#graphql
@@ -154,8 +187,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const cleanShop = session.shop.replace(".myshopify.com", "");
     return await billing.request({
       plan: MONTHLY_PLAN,
-      isTest: process.env.NODE_ENV !== "production",
-      returnUrl: `https://admin.shopify.com/store/${cleanShop}/apps/checkoutfields`,
+      isTest,
+      returnUrl: `https://admin.shopify.com/store/${cleanShop}/apps/${appHandle}`,
     });
   } catch (error: any) {
     if (error instanceof Response) {
