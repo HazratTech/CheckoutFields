@@ -1,0 +1,66 @@
+api_version = "2024-10"
+
+[[extensions]]
+name = "CheckoutFields"
+handle = "checkout-fields"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.thank-you.block.render"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "customer-account.order-status.block.render"
+
+[extensions.capabilities]
+api_access = true
+network_access = false
+block_progress = true
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "field_title"
+type = "single_line_text_field"
+name = "Field Label / Title"
+description = "Label displayed above the input (e.g., Gift Message, Delivery Notes, VAT/Tax ID)"
+
+[[extensions.settings.fields]]
+key = "field_type"
+type = "single_line_text_field"
+name = "Field Type"
+description = "Options: text, multiline, select, checkbox, number (defaults to text)"
+
+[[extensions.settings.fields]]
+key = "field_placeholder"
+type = "single_line_text_field"
+name = "Placeholder Text"
+description = "Hint text shown inside the input field"
+
+[[extensions.settings.fields]]
+key = "attribute_key"
+type = "single_line_text_field"
+name = "Order Attribute Key"
+description = "Name saved in Order Note Attributes (e.g., gift_message, vat_number)"
+
+[[extensions.settings.fields]]
+key = "field_required"
+type = "boolean"
+name = "Required Field"
+description = "Enforce customer input before proceeding"
+
+[[extensions.settings.fields]]
+key = "select_options"
+type = "multi_line_text_field"
+name = "Dropdown Options"
+description = "Comma or newline separated options (used only if Field Type is select)"
+
+[[extensions.settings.fields]]
+key = "field_help_text"
+type = "single_line_text_field"
+name = "Help Text"
+description = "Small explanation displayed below the field"

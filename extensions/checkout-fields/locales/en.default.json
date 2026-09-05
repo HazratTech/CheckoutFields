@@ -1,0 +1,6 @@
+{
+  "defaultTitle": "Custom Field",
+  "defaultPlaceholder": "Enter value...",
+  "requiredError": "This field is required.",
+  "selectPlaceholder": "Select an option..."
+}
