@@ -1,7 +1,7 @@
 # This file stores configurations for your Shopify app.
 
 name = "CheckoutFields"
-client_id = "checkoutfields-client-id"
+client_id = ""
 application_url = "https://shopify.dev/apps/default-app-home"
 embedded = true
 
