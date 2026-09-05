@@ -22,6 +22,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOST=0.0.0.0
 
 # Copy only production dependencies and built assets
 COPY --from=builder /app/node_modules ./node_modules
