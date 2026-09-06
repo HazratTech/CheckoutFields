@@ -7,7 +7,8 @@ This document contains every exact field, description, and asset needed to submi
 ## 1. Basic App Information
 
 - **App name** (Max 30 chars):  
-  `CheckoutFields`
+  `RelayWorks CheckoutFields` *(25 chars - includes unique brand name per Shopify guidelines)*  
+  *(Alternative: `Relay Checkout Fields` - 21 chars)*
 - **App icon** (1200×1200 px · PNG or JPG · < 1MB):  
   Use either of the two approved icons:
   - Option A: `assets/icons/checkoutfields_icon_concept1_form_flow.jpg` *(Recommended)*
@@ -37,7 +38,7 @@ Add custom text fields, multiline delivery instructions, preferred delivery date
 Enforce Required Field Validations:
 Ensure customers provide required information before advancing or completing their order. Our built-in validation rules enforce compliance for critical fields like age verification, terms checkboxes, or delivery instructions without disrupting checkout speed.
 
-100% Native Shopify Storage:
+Native Shopify Order Storage:
 Unlike other apps that store customer data in third-party external databases, CheckoutFields saves all submitted values directly into native Shopify Order Note Attributes. Your data immediately syncs with your warehouse management systems, fulfillment providers, ShipStation, and email marketing apps like Klaviyo.
 
 Zero Code Required:
