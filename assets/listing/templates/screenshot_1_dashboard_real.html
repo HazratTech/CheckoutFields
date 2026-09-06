@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Screenshot 1 - CheckoutFields Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1600px;
+      height: 900px;
+      background: #F1F2F4;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #202223;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Shopify Admin Top Bar */
+    .top-bar {
+      height: 52px;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      color: #FFFFFF;
+      flex-shrink: 0;
+    }
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .top-search {
+      width: 520px;
+      height: 32px;
+      background: #202020;
+      border: 1px solid #303030;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 13px;
+      color: #8C8C8C;
+      gap: 8px;
+    }
+    .top-search-kbd {
+      margin-left: auto;
+      background: #333333;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #CCCCCC;
+    }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .store-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #202020;
+      border: 1px solid #333333;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #E3E3E3;
+    }
+    .store-avatar {
+      width: 18px;
+      height: 18px;
+      background: #38BDF8;
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 800;
+      color: #0369A1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Main Container */
+    .app-body {
+      display: flex;
+      flex: 1;
+      height: calc(900px - 52px);
+    }
+
+    /* Left Sidebar */
+    .admin-sidebar {
+      width: 220px;
+      background: #EBECEF;
+      border-right: 1px solid #D2D5D8;
+      padding: 12px 8px;
+      font-size: 13px;
+      color: #303030;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .side-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+      color: #303030;
+    }
+    .side-item.active {
+      background: #FFFFFF;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .side-subitem {
+      padding: 6px 12px 6px 36px;
+      font-size: 12.5px;
+      color: #6D7175;
+    }
+    .side-header {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #6D7175;
+      padding: 12px 12px 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* App Workspace */
+    .workspace {
+      flex: 1;
+      padding: 24px 44px;
+      overflow-y: auto;
+    }
+
+    /* Breadcrumbs */
+    .app-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #202223;
+      margin-bottom: 16px;
+    }
+
+    /* Pro Plan Active Banner */
+    .banner-box {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    /* Title Card */
+    .title-card {
+      background: #FFFFFF;
+      border: 1px solid #E1E3E5;
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .title-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .app-h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #202223;
+    }
+    .badge-tier {
+      background: #DEF7EC;
+      color: #03543F;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .app-sub {
+      font-size: 13px;
+      color: #6D7175;
+    }
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-white {
+      background: #FFFFFF;
+      border: 1px solid #C9CCCF;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #202223;
+    }
+    .btn-dark {
+      background: #202223;
+      border: 1px solid #202223;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Content Grid */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 20px;
+    }
+
+    .p-card {
+      background: #FFFFFF;
+      border: 1px solid #E1E3E5;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    .p-card-h {
+      font-size: 15px;
+      font-weight: 700;
+      color: #202223;
+      margin-bottom: 4px;
+    }
+    .p-card-sub {
+      font-size: 12.5px;
+      color: #6D7175;
+      margin-bottom: 16px;
+    }
+
+    /* Preset Tabs */
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-pill {
+      background: #F1F2F4;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #4A4A4A;
+    }
+    .tab-pill.active {
+      background: #E4E5E7;
+      color: #202223;
+      border: 1px solid #C9CCCF;
+    }
+
+    /* Selected Preset Card */
+    .preset-display {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .preset-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .preset-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .preset-badge {
+      background: #E0F2FE;
+      color: #0369A1;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .preset-desc {
+      font-size: 12.5px;
+      color: #475569;
+      margin-bottom: 12px;
+    }
+    .preset-meta {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #64748B;
+      margin-bottom: 10px;
+    }
+    .preset-meta code {
+      background: #E2E8F0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #334155;
+      font-family: monospace;
+      font-size: 11.5px;
+    }
+    .preset-preview-input {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12.5px;
+      color: #94A3B8;
+    }
+
+    /* Steps List */
+    .step-ol {
+      padding-left: 20px;
+      font-size: 12.5px;
+      color: #4B5563;
+      line-height: 1.6;
+    }
+    .step-ol li {
+      margin-bottom: 6px;
+    }
+    .step-ol strong {
+      color: #1F2937;
+    }
+
+    /* Plan Card */
+    .plan-box {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .plan-box-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1E40AF;
+      margin-bottom: 4px;
+    }
+    .plan-box-desc {
+      font-size: 12px;
+      color: #1E3A8A;
+      line-height: 1.4;
+    }
+    .btn-plan {
+      width: 100%;
+      background: #202223;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px;
+      border-radius: 8px;
+      border: none;
+      text-align: center;
+    }
+
+    /* Tag Pills */
+    .compat-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .c-tag {
+      background: #F1F2F4;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #4A4A4A;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Admin Bar -->
+  <div class="top-bar">
+    <div class="top-left">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#95BF47"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span>shopify</span>
+    </div>
+    <div class="top-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Search</span>
+      <span class="top-search-kbd">⌘ K</span>
+    </div>
+    <div class="top-right">
+      <div class="store-pill">
+        <div class="store-avatar">RW</div>
+        <span>RelayWorks</span>
+        <span style="font-size: 10px; background: #333; padding: 1px 4px; border-radius: 3px; color: #AAA;">dev</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <!-- Left Navigation -->
+    <div class="admin-sidebar">
+      <div class="side-item">Home</div>
+      <div class="side-item">Orders</div>
+      <div class="side-item">Products</div>
+      <div class="side-item">Customers</div>
+      <div class="side-item">Growth</div>
+      <div class="side-item">Discounts</div>
+      <div class="side-item">Content</div>
+      <div class="side-item">Markets</div>
+      <div class="side-item">Finance</div>
+      <div class="side-item">Analytics</div>
+      <div class="side-header">Sales channels</div>
+      <div class="side-item">Online Store</div>
+      <div class="side-item">Agentic</div>
+      <div class="side-header">Apps</div>
+      <div class="side-item active">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        CheckoutFields
+      </div>
+      <div class="side-subitem">Additional page</div>
+    </div>
+
+    <!-- Workspace -->
+    <div class="workspace">
+      <div class="app-breadcrumb">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#202223" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        › CheckoutFields Dashboard
+      </div>
+
+      <!-- Banner -->
+      <div class="banner-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Pro Plan Active: Unlimited checkout fields, required blocking validation, and custom note attributes are enabled.</span>
+      </div>
+
+      <!-- Title Card -->
+      <div class="title-card">
+        <div class="title-left">
+          <div class="title-row">
+            <span class="app-h1">CheckoutFields</span>
+            <span class="badge-tier">Pro Plan Active</span>
+          </div>
+          <span class="app-sub">Add customizable gift notes, delivery instructions, tax IDs, and surveys to checkout.</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn-white">Manage Subscription</button>
+          <button class="btn-dark">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Checkout Editor
+          </button>
+        </div>
+      </div>
+
+      <!-- 2 Columns -->
+      <div class="grid-2col">
+        <!-- Left Column -->
+        <div>
+          <!-- Field Configuration Presets -->
+          <div class="p-card">
+            <div class="p-card-h">Field Configuration Presets</div>
+            <div class="p-card-sub">Reference settings to configure inside the Shopify Checkout Editor</div>
+
+            <div class="tab-pills">
+              <div class="tab-pill active">Gift Message</div>
+              <div class="tab-pill">Delivery Instructions</div>
+              <div class="tab-pill">VAT / Business Tax ID</div>
+              <div class="tab-pill">More views ▾</div>
+            </div>
+
+            <div class="preset-display">
+              <div class="preset-top">
+                <span class="preset-title">Gift Message</span>
+                <span class="preset-badge">Pro Active</span>
+              </div>
+              <div class="preset-desc">Collect personal gift notes for holidays, birthdays, and special occasions.</div>
+              <div class="preset-meta">
+                <span>Type: <code>multiline</code></span>
+                <span>Attribute Key: <code>gift_message</code></span>
+              </div>
+              <div class="preset-preview-input">
+                Placeholder: Write a personalized note for the recipient...
+              </div>
+            </div>
+          </div>
+
+          <!-- Native Storage Card -->
+          <div class="p-card">
+            <div class="p-card-h">Zero External Databases • 100% Native Shopify Storage</div>
+            <p style="font-size: 13px; color: #4B5563; line-height: 1.6; margin-bottom: 10px;">
+              Your customers' responses are saved directly into the Shopify Order details as <strong>Note Attributes</strong> under <code>order.customAttributes</code>.
+            </p>
+            <p style="font-size: 13px; color: #4B5563; line-height: 1.6;">
+              You can view them natively in Shopify Admin under <strong>Orders &gt; [Order #] &gt; Additional details</strong>, or sync them with shipping apps like ShipStation, Klaviyo, and ERPs with zero custom integrations.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+          <!-- Subscription Plan -->
+          <div class="p-card">
+            <div class="p-card-h">Subscription Plan</div>
+            <div class="plan-box">
+              <div class="plan-box-title">Pro Plan Active ($12.99 / month)</div>
+              <div class="plan-box-desc">
+                Unlimited checkout fields included. Required blocking validation and all field types enabled.
+              </div>
+            </div>
+            <button class="btn-plan">Manage Subscription ($12.99/mo)</button>
+          </div>
+
+          <!-- How to Position Fields -->
+          <div class="p-card">
+            <div class="p-card-h">How to Position Fields</div>
+            <div style="font-size: 12.5px; color: #4B5563; margin-bottom: 10px;">Shopify Checkout is modular. You drag and place fields visually:</div>
+            <ol class="step-ol">
+              <li>Click <strong>"Open Checkout Editor"</strong> above.</li>
+              <li>In the left sidebar, click <strong>"+ Add block"</strong>.</li>
+              <li>Select <strong>CheckoutFields</strong> and drag it to your desired section (Contact, Delivery, Payment).</li>
+              <li>Configure your title, placeholder, and attribute key in real-time.</li>
+            </ol>
+          </div>
+
+          <!-- Store Compatibility -->
+          <div class="p-card">
+            <div class="p-card-h">Store Compatibility</div>
+            <div class="compat-tags">
+              <div class="c-tag">Shopify Basic</div>
+              <div class="c-tag">Shopify</div>
+              <div class="c-tag">Advanced</div>
+              <div class="c-tag">Shopify Plus</div>
+            </div>
+            <div style="font-size: 11.5px; color: #6D7175; line-height: 1.4;">
+              Checkout blocks are available across all checkout steps on Shopify Plus, and on Thank You / Order Status pages on all plans.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

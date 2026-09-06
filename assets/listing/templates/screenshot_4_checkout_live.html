@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Screenshot 4 - Customer Facing Checkout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1600px;
+      height: 900px;
+      background: #FFFFFF;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #202223;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Left Form Column */
+    .checkout-form-col {
+      flex: 1.15;
+      padding: 48px 72px;
+      border-right: 1px solid #E5E7EB;
+      overflow-y: auto;
+    }
+    .store-brand {
+      font-size: 22px;
+      font-weight: 800;
+      color: #111827;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+
+    /* CHECKOUTFIELDS BLOCK (REAL PRODUCT LOOK) */
+    .cf-block {
+      border: 1.5px solid #10B981;
+      background: #F0FDF4;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+      position: relative;
+    }
+    .cf-badge {
+      position: absolute;
+      top: -10px;
+      right: 14px;
+      background: #10B981;
+      color: white;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+    .cf-label {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #065F46;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .cf-textarea {
+      width: 100%;
+      height: 64px;
+      background: #FFFFFF;
+      border: 1px solid #6EE7B7;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #064E3B;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+
+    .sec-h {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sec-h span {
+      font-size: 13px;
+      color: #005BD3;
+      font-weight: 500;
+    }
+    .field-input {
+      width: 100%;
+      background: #F9FAFB;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: #111827;
+      margin-bottom: 12px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .btn-pay {
+      width: 100%;
+      background: #111827;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    /* Right Order Summary Column */
+    .checkout-summary-col {
+      flex: 0.85;
+      background: #FAFAFA;
+      padding: 48px 64px;
+    }
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .item-thumb {
+      width: 56px;
+      height: 56px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      position: relative;
+    }
+    .item-qty {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #4B5563;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .line-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #4B5563;
+      margin-bottom: 10px;
+    }
+    .line-total {
+      display: flex;
+      justify-content: space-between;
+      font-size: 17px;
+      font-weight: 800;
+      color: #111827;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid #E5E7EB;
+    }
+
+    .feature-callout {
+      margin-top: 36px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .callout-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ECFDF5;
+      color: #065F46;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      margin-bottom: 8px;
+    }
+    .callout-p {
+      font-size: 12.5px;
+      color: #4B5563;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <!-- Left Checkout Column -->
+  <div class="checkout-form-col">
+    <div class="store-brand">RelayWorks</div>
+
+    <!-- Live CheckoutFields Block -->
+    <div class="cf-block">
+      <div class="cf-badge">CheckoutFields Block</div>
+      <div class="cf-label">
+        <span>Gift Message</span>
+        <span style="font-size: 11.5px; color: #047857; font-weight: 500;">Saved to Order Notes</span>
+      </div>
+      <div class="cf-textarea">
+        Hello Mate, Happy Birthday! Enjoy the gift.
+      </div>
+    </div>
+
+    <div class="sec-h">
+      Contact
+      <span>Sign in</span>
+    </div>
+    <input class="field-input" type="text" value="gennaro.ratke@example.com">
+
+    <div class="sec-h">Delivery</div>
+    <select class="field-input"><option>United States</option></select>
+    <div class="grid-2">
+      <input class="field-input" type="text" value="Gennaro">
+      <input class="field-input" type="text" value="Ratke">
+    </div>
+    <input class="field-input" type="text" value="1600 Pennsylvania Avenue NW">
+    <div class="grid-2">
+      <input class="field-input" type="text" value="Washington">
+      <input class="field-input" type="text" value="Washington DC">
+    </div>
+
+    <div class="sec-h">Payment</div>
+    <input class="field-input" type="text" value="•••• •••• •••• 4242 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12/28">
+
+    <button class="btn-pay">Pay now · $29.00</button>
+  </div>
+
+  <!-- Right Order Summary Column -->
+  <div class="checkout-summary-col">
+    <div class="summary-item">
+      <div class="item-thumb">
+        <div class="item-qty">1</div>
+        📦
+      </div>
+      <div style="flex: 1;">
+        <div style="font-size: 14px; font-weight: 600; color: #111827;">My Product</div>
+        <div style="font-size: 12px; color: #6B7280; margin-top: 2px;">Default Title</div>
+      </div>
+      <div style="font-size: 14px; font-weight: 600; color: #111827;">$19.00</div>
+    </div>
+
+    <div class="line-row">
+      <span>Subtotal</span>
+      <span>$19.00</span>
+    </div>
+    <div class="line-row">
+      <span>Shipping (Standard)</span>
+      <span>$10.00</span>
+    </div>
+    <div class="line-total">
+      <span>Total</span>
+      <span>USD $29.00</span>
+    </div>
+
+    <div class="feature-callout">
+      <div class="callout-pill">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        NATIVE CHECKOUT EXTENSION
+      </div>
+      <div class="callout-p">
+        Renders instantly inside Shopify One-Page Checkout. Adapts automatically to your brand's colors, typography, and mobile responsive layout.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
