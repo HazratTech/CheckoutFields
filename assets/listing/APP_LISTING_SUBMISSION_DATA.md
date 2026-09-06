@@ -7,8 +7,8 @@ This document contains every exact field, description, and asset needed to submi
 ## 1. Basic App Information
 
 - **App name** (Max 30 chars):  
-  `RelayWorks CheckoutFields` *(25 chars - includes unique brand name per Shopify guidelines)*  
-  *(Alternative: `Relay Checkout Fields` - 21 chars)*
+  `Fieldy Custom Checkout Fields` *(29 / 30 chars — ASO optimized with brand + primary keywords)*  
+  *(Alternative: `Relay Custom Checkout Fields` — 28 chars)*
 - **App icon** (1200×1200 px · PNG or JPG · < 1MB):  
   Use either of the two approved icons:
   - Option A: `assets/icons/checkoutfields_icon_concept1_form_flow.jpg` *(Recommended)*
@@ -197,3 +197,17 @@ Step-by-step instructions to test CheckoutFields:
 7. Verify App Dashboard:
    - Open 'CheckoutFields' from the Admin sidebar to review your plan status, active fields count, and documentation.
 ```
+
+---
+
+## 8. Mandatory Compliance Webhooks (Customer Privacy)
+
+Shopify requires apps to respond to 3 GDPR/privacy webhooks with HMAC SHA-256 verification:
+
+| Webhook Name | Production Endpoint URL |
+|---|---|
+| **Customer data request** (`customers/data_request`) | `https://checkoutfields.relayworks.dev/webhooks/compliance` |
+| **Customer erasure** (`customers/redact`) | `https://checkoutfields.relayworks.dev/webhooks/compliance` |
+| **Shop erasure** (`shop/redact`) | `https://checkoutfields.relayworks.dev/webhooks/compliance` |
+
+*(Note: Individual endpoints like `/webhooks/customers/data_request`, `/webhooks/customers/redact`, and `/webhooks/shop/redact` are also supported.)*
