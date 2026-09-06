@@ -5,421 +5,552 @@
   <title>Screenshot 2 - Shopify Checkout Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       width: 1600px;
       height: 900px;
-      background: #1A1A1A;
+      background: #FFFFFF;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #E3E3E3;
+      color: #202223;
       overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
-    /* Top Navigation Bar */
+    /* Top Nav */
     .top-nav {
-      height: 54px;
-      background: #111111;
-      border-bottom: 1px solid #2B2B2B;
+      height: 48px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E1E3E5;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      color: #FFFFFF;
+      padding: 0 16px;
+      font-size: 13px;
+      flex-shrink: 0;
     }
-    .nav-left {
+    .top-left {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
     }
-    .store-badge {
+    .top-icon-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: #5C5F62;
+    }
+    .top-center {
       display: flex;
       align-items: center;
       gap: 10px;
       font-size: 13px;
-      font-weight: 600;
-      color: #FFFFFF;
+      font-weight: 500;
     }
-    .page-dropdown {
-      background: #242424;
-      border: 1px solid #383838;
-      border-radius: 6px;
-      padding: 5px 12px;
-      font-size: 13px;
+    .badge-active {
+      background: #DEF7EC;
+      color: #03543F;
+      font-size: 11px;
       font-weight: 600;
-      color: #FFFFFF;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .top-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
     }
     .device-switcher {
       display: flex;
       align-items: center;
-      background: #242424;
+      border: 1px solid #D2D5D8;
       border-radius: 6px;
-      padding: 3px;
-      gap: 4px;
+      padding: 2px;
     }
     .device-btn {
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 4px;
-      color: #8C8C8C;
-      cursor: pointer;
+      color: #5C5F62;
     }
     .device-btn.active {
-      background: #333333;
-      color: #FFFFFF;
+      background: #E4E5E7;
+      color: #202223;
     }
-    .save-btn {
-      background: #008060;
-      color: #FFFFFF;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 7px 18px;
-      border-radius: 6px;
+    .btn-save {
+      background: #E4E5E7;
+      color: #8C9196;
       border: none;
-    }
-
-    /* Main Workspace */
-    .editor-body {
-      display: flex;
-      flex: 1;
-      height: calc(900px - 54px);
-    }
-
-    /* Left Sidebar: Sections Hierarchy */
-    .sidebar-left {
-      width: 280px;
-      background: #1A1A1A;
-      border-right: 1px solid #2B2B2B;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #8C8C8C;
-      margin-bottom: 14px;
-    }
-    .tree-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
+      padding: 6px 14px;
       border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      color: #CCCCCC;
-      margin-bottom: 4px;
-    }
-    .tree-item.selected {
-      background: #26384C;
-      color: #60A5FA;
-      border: 1px solid #3B82F6;
+      font-size: 12.5px;
       font-weight: 600;
     }
-    .tree-indent {
-      margin-left: 18px;
-    }
-    .add-block-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #60A5FA;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 10px;
-      border: 1px dashed #3B82F6;
-      border-radius: 6px;
-      margin-top: 12px;
-      background: rgba(59, 130, 246, 0.05);
-    }
 
-    /* Center Canvas: Checkout Preview */
-    .canvas-center {
-      flex: 1;
-      background: #2E2E2E;
+    /* Workspace */
+    .editor-layout {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .mock-browser {
-      width: 680px;
-      height: 760px;
-      background: #FFFFFF;
-      border-radius: 12px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      flex: 1;
+      height: calc(900px - 48px);
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .mock-checkout-header {
-      padding: 20px 28px;
-      border-bottom: 1px solid #E5E7EB;
-      font-size: 16px;
-      font-weight: 800;
-      color: #111827;
-      letter-spacing: 0.5px;
-    }
-    .mock-checkout-body {
-      padding: 24px 28px;
-      color: #1F2937;
-      font-size: 13px;
-    }
-    .mock-box {
-      border: 1px solid #E5E7EB;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      background: #F9FAFB;
-      color: #4B5563;
-    }
-    .mock-active-block {
-      border: 2px solid #3B82F6;
-      border-radius: 10px;
-      padding: 16px;
-      background: #EFF6FF;
-      margin-bottom: 14px;
-      position: relative;
-    }
-    .mock-active-badge {
-      position: absolute;
-      top: -10px;
-      right: 14px;
-      background: #3B82F6;
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
     }
 
-    /* Right Sidebar: Block Inspector */
-    .sidebar-right {
-      width: 340px;
-      background: #1A1A1A;
-      border-left: 1px solid #2B2B2B;
-      padding: 20px;
+    /* Left Sidebar */
+    .sidebar-left {
+      width: 260px;
+      background: #FFFFFF;
+      border-right: 1px solid #E1E3E5;
+      padding: 12px;
+      font-size: 12.5px;
+      color: #202223;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex-shrink: 0;
       overflow-y: auto;
     }
-    .inspector-header {
-      padding-bottom: 16px;
-      border-bottom: 1px solid #2B2B2B;
-      margin-bottom: 20px;
-    }
-    .inspector-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-    .inspector-subtitle {
-      font-size: 12px;
-      color: #8C8C8C;
-      margin-top: 4px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-    .group-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #CCCCCC;
-      margin-bottom: 6px;
-    }
-    .group-input {
-      width: 100%;
-      background: #242424;
-      border: 1px solid #383838;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 13px;
-      color: #FFFFFF;
-    }
-    .group-select {
-      width: 100%;
-      background: #242424;
-      border: 1px solid #383838;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 13px;
-      color: #FFFFFF;
-    }
-    .toggle-box {
+    .sec-h {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #242424;
-      border: 1px solid #383838;
-      border-radius: 6px;
-      padding: 10px 12px;
+      font-weight: 600;
+      padding: 6px 8px;
+      color: #202223;
+      margin-top: 6px;
     }
-    .toggle-pill {
-      width: 36px;
-      height: 20px;
-      background: #10B981;
-      border-radius: 10px;
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      color: #4A4A4A;
+    }
+    .tree-row.selected {
+      background: #005BD3;
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+    .tree-row.selected svg {
+      stroke: #FFFFFF;
+    }
+    .tree-indent {
+      padding-left: 24px;
+    }
+    .add-block {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #005BD3;
+      font-weight: 500;
+      padding: 6px 8px;
+      margin-top: 2px;
+    }
+
+    /* Center Canvas Preview */
+    .canvas-view {
+      flex: 1;
+      background: #FFFFFF;
+      padding: 24px 36px;
+      overflow-y: auto;
+      display: flex;
       position: relative;
     }
-    .toggle-pill::after {
+    .checkout-form {
+      flex: 1.2;
+      padding-right: 32px;
+    }
+    .checkout-summary {
+      flex: 0.8;
+      border: 1px solid #005BD3;
+      border-radius: 8px;
+      padding: 20px;
+      background: #FFFFFF;
+      position: relative;
+      height: fit-content;
+    }
+    .summary-badge-float {
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      background: #005BD3;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .store-h {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 20px;
+    }
+
+    /* CheckoutFields Block in Preview */
+    .cf-preview-block {
+      border: 1px solid #D2D5D8;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+    .cf-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+    .cf-textarea {
+      width: 100%;
+      height: 60px;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 12.5px;
+      color: #9CA3AF;
+      font-family: inherit;
+    }
+
+    .chk-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .chk-input {
+      width: 100%;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12.5px;
+      color: #111827;
+      margin-bottom: 10px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .item-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .item-box {
+      width: 44px;
+      height: 44px;
+      background: #F3F4F6;
+      border: 1px solid #E5E7EB;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .item-qty-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #000000;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toast-saved {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1F2937;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* Right Inspector */
+    .sidebar-right {
+      width: 330px;
+      background: #FFFFFF;
+      border-left: 1px solid #E1E3E5;
+      padding: 16px;
+      font-size: 12.5px;
+      color: #202223;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .insp-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 700;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #E1E3E5;
+      margin-bottom: 16px;
+    }
+    .insp-group-h {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #202223;
+      margin-bottom: 8px;
+    }
+    .insp-row {
+      margin-bottom: 14px;
+    }
+    .insp-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+    .insp-sub {
+      font-size: 11px;
+      color: #6D7175;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+    .insp-input {
+      width: 100%;
+      border: 1px solid #C9CCCF;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      color: #202223;
+    }
+    .toggle-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .sw-off {
+      width: 32px;
+      height: 18px;
+      background: #C9CCCF;
+      border-radius: 9999px;
+      position: relative;
+    }
+    .sw-off::after {
       content: '';
       position: absolute;
       top: 2px;
-      right: 2px;
-      width: 16px;
-      height: 16px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
       background: white;
       border-radius: 50%;
     }
-    .info-callout {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 6px;
-      padding: 10px 12px;
+    .radio-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .radio-lbl {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-size: 12px;
-      color: #34D399;
-      line-height: 1.5;
-      margin-top: 20px;
+      color: #374151;
     }
   </style>
 </head>
 <body>
-  <!-- Top Bar -->
+  <!-- Top Nav -->
   <div class="top-nav">
-    <div class="nav-left">
-      <div class="store-badge">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-        <span>Aura Modern Living</span>
+    <div class="top-left">
+      <div class="top-icon-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
       </div>
-      <div class="page-dropdown">
-        <span>Checkout</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      <div class="top-icon-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </div>
     </div>
-
-    <div class="device-switcher">
-      <div class="device-btn active">Desktop</div>
-      <div class="device-btn">Mobile</div>
+    <div class="top-center">
+      <span>RelayWorks configuration</span>
+      <span class="badge-active">Active</span>
+      <span style="color: #6D7175;">• Store default</span>
+      <span style="color: #6D7175;">• Checkout</span>
     </div>
-
-    <button class="save-btn">Save Changes</button>
+    <div class="top-right">
+      <div class="device-switcher">
+        <div class="device-btn active">Desktop</div>
+        <div class="device-btn">Mobile</div>
+      </div>
+      <button class="btn-save">Save</button>
+    </div>
   </div>
 
-  <div class="editor-body">
-    <!-- Left Hierarchy Sidebar -->
+  <div class="editor-layout">
+    <!-- Left Sidebar -->
     <div class="sidebar-left">
-      <div class="sidebar-title">Checkout Sections</div>
+      <div style="font-weight: 700; font-size: 13px; margin-bottom: 8px;">Checkout</div>
       
-      <div class="tree-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
-        <span>Contact information</span>
-      </div>
-      <div class="tree-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
-        <span>Shipping address</span>
-      </div>
-      <div class="tree-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
-        <span>Shipping methods</span>
-      </div>
+      <div class="sec-h">Header <span>›</span></div>
+      <div class="tree-row tree-indent">Logo</div>
+      <div class="tree-row tree-indent">Cart link</div>
+      <div class="add-block tree-indent">+ Add block</div>
 
-      <!-- Selected App Block -->
-      <div class="tree-item selected tree-indent">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      <div class="sec-h">Main</div>
+      <!-- SELECTED CHECKOUTFIELDS BLOCK -->
+      <div class="tree-row selected tree-indent">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
         <span>CheckoutFields</span>
       </div>
+      <div class="tree-row tree-indent">Contact</div>
+      <div class="tree-row tree-indent" style="padding-left: 36px; color: #6D7175;">Email or phone number</div>
+      <div class="tree-row tree-indent">Delivery</div>
+      <div class="tree-row tree-indent" style="padding-left: 36px; color: #6D7175;">Delivery address</div>
+      <div class="tree-row tree-indent" style="padding-left: 36px; color: #6D7175;">Shipping method</div>
+      <div class="tree-row tree-indent">Payment</div>
+      <div class="tree-row tree-indent">Action</div>
+      <div class="add-block tree-indent">+ Add block</div>
 
-      <div class="tree-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
-        <span>Payment options</span>
-      </div>
-
-      <div class="add-block-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        <span>Add app block</span>
-      </div>
+      <div class="sec-h">Order summary <span>›</span></div>
+      <div class="sec-h">Footer <span>›</span></div>
     </div>
 
     <!-- Center Canvas Preview -->
-    <div class="canvas-center">
-      <div class="mock-browser">
-        <div class="mock-checkout-header">AURA MODERN LIVING · CHECKOUT</div>
-        <div class="mock-checkout-body">
-          <div class="mock-box">Shipping Address: 742 Evergreen Terrace, Austin TX</div>
-          <div class="mock-box">Shipping Method: Standard Delivery ($4.50)</div>
+    <div class="canvas-view">
+      <div class="checkout-form">
+        <div class="store-h">RelayWorks</div>
 
-          <!-- Highlighted App Block in Canvas -->
-          <div class="mock-active-block">
-            <div class="mock-active-badge">SELECTED BLOCK</div>
-            <div style="font-weight: 700; color: #1E3A8A; font-size: 14px; margin-bottom: 6px;">
-              Delivery Instructions <span style="color: #DC2626;">* Required</span>
-            </div>
-            <div style="background: white; border: 1px solid #93C5FD; border-radius: 6px; padding: 10px; color: #3B82F6; font-size: 13px;">
-              Please leave parcel behind the side gate...
-            </div>
+        <!-- CheckoutFields Live Preview Block -->
+        <div class="cf-preview-block">
+          <div class="cf-label">Gift Message</div>
+          <div class="cf-textarea">Write your gift message here...</div>
+        </div>
+
+        <div class="chk-title">
+          Contact
+          <span style="font-size: 12px; color: #005BD3; font-weight: 500;">Sign in</span>
+        </div>
+        <input class="chk-input" type="text" value="gennaro.ratke@example.com">
+        <div style="font-size: 12px; color: #4B5563; margin-bottom: 18px;">
+          <input type="checkbox" checked> Email me with news and offers
+        </div>
+
+        <div class="chk-title">Delivery</div>
+        <select class="chk-input"><option>United States</option></select>
+        <div class="grid-2">
+          <input class="chk-input" type="text" value="Gennaro">
+          <input class="chk-input" type="text" value="Ratke">
+        </div>
+        <input class="chk-input" type="text" value="1600 Pennsylvania Avenue NW">
+        <div class="grid-2">
+          <input class="chk-input" type="text" value="Washington">
+          <input class="chk-input" type="text" value="Washington DC">
+        </div>
+        <input class="chk-input" type="text" value="+1 202-456-1414">
+      </div>
+
+      <!-- Right Summary in Canvas -->
+      <div class="checkout-summary">
+        <div class="summary-badge-float">Order summary</div>
+        <div class="item-line">
+          <div class="item-box">
+            <div class="item-qty-badge">1</div>
+            📦
           </div>
-
-          <div class="mock-box" style="margin-top: 16px;">Payment Method: Credit card</div>
+          <div style="flex: 1; font-size: 13px; font-weight: 600;">My Product</div>
+          <div style="font-size: 13px; font-weight: 600;">$19.00</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #4B5563; margin-bottom: 6px;">
+          <span>Subtotal</span>
+          <span>$19.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #4B5563; margin-bottom: 12px;">
+          <span>Shipping</span>
+          <span>$10.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; border-top: 1px solid #E5E7EB; padding-top: 10px;">
+          <span>Total</span>
+          <span>USD $29.00</span>
         </div>
       </div>
+
+      <div class="toast-saved">Changes saved &nbsp;×</div>
     </div>
 
-    <!-- Right Inspector Sidebar -->
+    <!-- Right Inspector Panel -->
     <div class="sidebar-right">
-      <div class="inspector-header">
-        <div class="inspector-title">CheckoutFields Block</div>
-        <div class="inspector-subtitle">Configure field attributes & validation rules</div>
+      <div class="insp-head">
+        <span>CheckoutFields</span>
+        <span style="color: #6D7175;">×</span>
       </div>
 
-      <div class="form-group">
-        <div class="group-label">Field Label</div>
-        <input class="group-input" type="text" value="Delivery Instructions">
+      <div class="insp-group-h">Checkout behavior</div>
+      <div class="insp-row">
+        <div class="toggle-bar">
+          <span style="font-size: 12px; font-weight: 600;">Allow app to block checkout</span>
+          <div class="sw-off"></div>
+        </div>
+        <div class="insp-sub">Orders will be rejected if customer information is missing or invalid.</div>
       </div>
 
-      <div class="form-group">
-        <div class="group-label">Field Type</div>
-        <select class="group-select">
-          <option selected>Text (Multiline textarea)</option>
-          <option>Text (Single line)</option>
-          <option>Date Picker</option>
-          <option>Dropdown (Select list)</option>
-          <option>Checkbox</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <div class="group-label">Placeholder Text</div>
-        <input class="group-input" type="text" value="Leave instructions for courier...">
-      </div>
-
-      <div class="form-group">
-        <div class="toggle-box">
-          <div>
-            <div style="font-size: 13px; font-weight: 600; color: #FFFFFF;">Required Field</div>
-            <div style="font-size: 11px; color: #8C8C8C;">Block progression until filled</div>
-          </div>
-          <div class="toggle-pill"></div>
+      <div class="insp-row">
+        <div class="toggle-bar">
+          <span style="font-size: 12px; font-weight: 600;">Include block in Shop Pay</span>
+          <div class="sw-off"></div>
         </div>
       </div>
 
-      <div class="form-group">
-        <div class="group-label">Placement Target</div>
-        <select class="group-select">
-          <option selected>purchase.checkout.shipping-option-list.render-after</option>
-          <option>purchase.checkout.contact.render-after</option>
-          <option>purchase.checkout.payment-method-list.render-after</option>
-        </select>
+      <div class="insp-group-h" style="margin-top: 18px;">Block settings</div>
+
+      <div class="insp-row">
+        <div class="insp-label">Field Label / Title</div>
+        <input class="insp-input" type="text" value="Gift Message">
+        <div class="insp-sub">Label displayed above the input (e.g., Gift Message, Delivery Notes, VAT/Tax ID)</div>
       </div>
 
-      <div class="info-callout">
-        ✓ <strong>Zero Code Required:</strong> Drag and position anywhere in your checkout with native Shopify live previews.
+      <div class="insp-row">
+        <div class="insp-label">Field Type</div>
+        <input class="insp-input" type="text" value="multiline">
+        <div class="insp-sub">Free: text, multiline | Pro Plan: select, checkbox, number</div>
+      </div>
+
+      <div class="insp-row">
+        <div class="insp-label">Placeholder Text</div>
+        <input class="insp-input" type="text" value="Write your gift message here...">
+        <div class="insp-sub">Hint text shown inside the input field</div>
+      </div>
+
+      <div class="insp-row">
+        <div class="insp-label">Order Attribute Key</div>
+        <input class="insp-input" type="text" value="gift_message">
+        <div class="insp-sub">Name saved in Order Note Attributes (e.g., gift_message, vat_number)</div>
+      </div>
+
+      <div class="insp-row">
+        <div class="insp-label">Required Field (Pro Plan)</div>
+        <div class="radio-row">
+          <label class="radio-lbl"><input type="radio" name="req"> True</label>
+          <label class="radio-lbl"><input type="radio" name="req" checked> False</label>
+        </div>
+        <div class="insp-sub">Block checkout until filled (Pro Plan feature - also requires 'Allow app to block checkout' toggle above)</div>
       </div>
     </div>
   </div>
