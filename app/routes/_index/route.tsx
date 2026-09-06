@@ -21,13 +21,12 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <div className={styles.hero}>
-          <div className={styles.badge}>Shopify Checkout Extensibility</div>
-          <h1 className={styles.heading}>CheckoutFields</h1>
+        <header className={styles.header}>
+          <h1 className={styles.heading}>Fieldy Custom Checkout Fields</h1>
           <p className={styles.text}>
-            Add customizable gift notes, delivery instructions, tax IDs, and surveys directly to your Shopify checkout.
+            Add customizable gift notes, delivery instructions, tax IDs, and surveys directly into your Shopify One-Page Checkout.
           </p>
-        </div>
+        </header>
 
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">

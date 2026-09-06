@@ -344,28 +344,26 @@ export default function Index() {
 
   return (
     <Page>
-      <TitleBar title="CheckoutFields Dashboard" />
-
+      <TitleBar title="Fieldy Custom Checkout Fields Dashboard" />
       <BlockStack gap="500">
-        {actionData?.notice && (
-          <Banner tone="info" onDismiss={() => {}}>
-            {actionData.notice}
-          </Banner>
-        )}
-        {actionData?.error && (
-          <Banner tone="critical" onDismiss={() => {}}>
-            {actionData.error}
-          </Banner>
-        )}
+        {/* Top Notification Banner */}
+        <Banner
+          title="Checkout Extension Active"
+          tone="success"
+        >
+          <p>
+            Custom checkout fields, required blocking validation, and order note attributes are ready.
+          </p>
+        </Banner>
 
-        {/* Header Bar */}
+        {/* Hero Welcome Card */}
         <Card>
           <BlockStack gap="400">
             <InlineStack align="space-between" blockAlign="center">
               <BlockStack gap="100">
-                <InlineStack gap="200" blockAlign="center">
+                <InlineStack gap="300" blockAlign="center">
                   <Text as="h1" variant="headingLg">
-                    CheckoutFields
+                    Fieldy Custom Checkout Fields
                   </Text>
                   <Badge tone={isPro ? "success" : "info"}>
                     {isPro ? "Pro Plan Active" : "Free Starter Tier"}

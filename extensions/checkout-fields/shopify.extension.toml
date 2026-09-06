@@ -1,7 +1,7 @@
 api_version = "2025-07"
 
 [[extensions]]
-name = "CheckoutFields"
+name = "Fieldy Custom Checkout Fields"
 handle = "checkout-fields"
 uid = "914da4f3-b78e-a869-6db4-7a34f741f346011d6bc7"
 type = "ui_extension"

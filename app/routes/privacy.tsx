@@ -3,8 +3,8 @@ import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Privacy Policy - CheckoutFields" },
-    { name: "description", content: "Privacy Policy for CheckoutFields Shopify App" },
+    { title: "Privacy Policy - Fieldy Custom Checkout Fields" },
+    { name: "description", content: "Privacy Policy for Fieldy Custom Checkout Fields Shopify App" },
   ];
 };
 
@@ -29,7 +29,7 @@ export default function Privacy() {
       }}>
         <div style={{ marginBottom: "32px", borderBottom: "1px solid #1F2937", paddingBottom: "24px" }}>
           <Link to="/" style={{ color: "#10B981", textDecoration: "none", fontSize: "14px", fontWeight: 600 }}>
-            &larr; Back to CheckoutFields
+            &larr; Back to Fieldy Custom Checkout Fields
           </Link>
           <h1 style={{ fontSize: "32px", fontWeight: 800, color: "#FFFFFF", marginTop: "16px", marginBottom: "8px" }}>
             Privacy Policy
@@ -44,7 +44,7 @@ export default function Privacy() {
             1. Overview
           </h2>
           <p style={{ color: "#CBD5E1", marginBottom: "12px" }}>
-            CheckoutFields ("we", "our", or "the App") is committed to protecting the privacy of merchants and their customers. This Privacy Policy describes how we collect, use, and handle information when you install or use the App in connection with your Shopify-supported store.
+            Fieldy Custom Checkout Fields ("we", "our", or "the App") is committed to protecting the privacy of merchants and their customers. This Privacy Policy describes how we collect, use, and handle information when you install or use the App in connection with your Shopify-supported store.
           </p>
         </section>
 
@@ -64,7 +64,7 @@ export default function Privacy() {
             </li>
           </ul>
           <p style={{ color: "#CBD5E1" }}>
-            <strong>No External Customer Database:</strong> CheckoutFields does not store customer personal identifiable information (PII) on external proprietary databases. All custom checkout input data lives 100% natively within your Shopify store.
+            <strong>No External Customer Database:</strong> Fieldy Custom Checkout Fields does not store customer personal identifiable information (PII) on external proprietary databases. All custom checkout input data lives natively within your Shopify store.
           </p>
         </section>
 
