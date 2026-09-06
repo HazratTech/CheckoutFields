@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CheckoutFields - Feature Banner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1600px;
+      height: 900px;
+      background: #090D16;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #FFFFFF;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0 100px;
+    }
+    .bg-glow-1 {
+      position: absolute;
+      top: -150px;
+      right: 100px;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(16, 185, 129, 0) 70%);
+      pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: absolute;
+      bottom: -200px;
+      left: -100px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
+      pointer-events: none;
+    }
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(circle at 60% 50%, black, transparent 80%);
+      pointer-events: none;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+    }
+
+    .content-left {
+      max-width: 680px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #34D399;
+      margin-bottom: 28px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10B981;
+    }
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 60px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 24px;
+      color: #FFFFFF;
+    }
+    h1 span {
+      background: linear-gradient(135deg, #10B981 0%, #6EE7B7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p {
+      font-size: 20px;
+      line-height: 1.6;
+      color: #94A3B8;
+      margin-bottom: 36px;
+      font-weight: 400;
+    }
+    .pill-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      color: #E2E8F0;
+    }
+    .pill svg {
+      color: #10B981;
+    }
+
+    /* Right Preview Card */
+    .preview-card-wrap {
+      width: 580px;
+      perspective: 1200px;
+    }
+    .preview-card {
+      background: #111726;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7),
+                  0 0 0 1px rgba(16, 185, 129, 0.15);
+      padding: 32px;
+      backdrop-filter: blur(20px);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+    .card-title-icon {
+      width: 32px;
+      height: 32px;
+      background: #10B981;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+      color: #CBD5E1;
+      margin-bottom: 8px;
+    }
+    .form-req {
+      color: #F43F5E;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .input-box {
+      width: 100%;
+      background: #1A2234;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #F8FAFC;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .input-box.active {
+      border-color: #10B981;
+      box-shadow: 0 0 0 1px #10B981;
+    }
+    .input-val {
+      color: #F1F5F9;
+      font-weight: 500;
+    }
+    .input-placeholder {
+      color: #64748B;
+    }
+    .textarea-box {
+      width: 100%;
+      background: #1A2234;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #F8FAFC;
+      font-size: 14px;
+      height: 76px;
+      line-height: 1.5;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .toggle-switch {
+      width: 44px;
+      height: 24px;
+      background: #10B981;
+      border-radius: 12px;
+      position: relative;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .footer-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #94A3B8;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+  <div class="grid-lines"></div>
+
+  <div class="container">
+    <div class="content-left">
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Shopify Checkout Extensibility
+      </div>
+      <h1>Custom Checkout Fields, <span>Built for Conversion.</span></h1>
+      <p>
+        Effortlessly capture delivery instructions, gift messages, order notes, and required validations inside Shopify's native one-page checkout.
+      </p>
+      <div class="pill-group">
+        <div class="pill">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          100% Native Checkout
+        </div>
+        <div class="pill">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Required Blocking Rules
+        </div>
+        <div class="pill">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          Saves to Order Attributes
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-card-wrap">
+      <div class="preview-card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-title-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </div>
+            Checkout Additional Information
+          </div>
+          <span class="card-badge">Live Extension</span>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">
+            <span>Preferred Delivery Date</span>
+            <span class="form-req">* Required</span>
+          </div>
+          <div class="input-box active">
+            <span class="input-val">Thursday, October 15, 2026</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-label">
+            <span>Delivery Instructions & Notes</span>
+            <span style="color: #64748B; font-weight: 400;">Optional</span>
+          </div>
+          <div class="textarea-box">
+            Please leave the package at the back door behind the garden planter box. Ring bell on arrival.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="toggle-row">
+            <div>
+              <div style="font-size: 14px; font-weight: 600; color: #F1F5F9; margin-bottom: 2px;">Gift Packaging & Card Note</div>
+              <div style="font-size: 12px; color: #94A3B8;">Include complimentary greeting card</div>
+            </div>
+            <div class="toggle-switch"></div>
+          </div>
+        </div>
+
+        <div class="footer-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          Saved securely to native Shopify Order Note Attributes
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
