@@ -64,25 +64,43 @@ Simply open your Shopify Checkout Theme Editor, drag the CheckoutFields block in
 
 ---
 
+### App Category Details
+- **Cart display**:  
+  Check: `[x] Not applicable for this app`
+- **Upselling**:  
+  Check: `[x] Not applicable for this app`
+- **Checkout customization**:  
+  Add tags (press Enter after each):
+  - `Custom notes`
+  - `Custom fields`
+  - `Delivery instructions`
+  - `Gift message`
+
+---
+
 ## 3. Media & Screenshots (1600 × 900 px · 16:9)
 
-All images are saved in `assets/listing/` and match the exact real screens of your app:
+All images are saved in `assets/listing/` and meet all Shopify visual guidelines:
 
 1. **Feature Image / Banner** (1600 × 900 px · 220 KB):
    - File: `assets/listing/feature_image.png`
-   - Description: Complete end-to-end product flow: from customer entering input in One-Page Checkout to native data appearing in Shopify Admin Order Additional Details.
-2. **Desktop Screenshot 1: CheckoutFields App Dashboard** (1600 × 900 px · 194 KB):
+   - Description: Complete product workflow from One-Page Checkout input to native Shopify Order Additional Details.
+2. **Desktop Screenshot 1: Dashboard** (1600 × 900 px · 194 KB):
    - File: `assets/listing/screenshot_1_dashboard.png`
-   - Alt text: `CheckoutFields app dashboard in Shopify Admin showing field configuration presets, native storage, and positioning instructions`
-3. **Desktop Screenshot 2: Shopify Checkout Theme Editor** (1600 × 900 px · 139 KB):
+   - Alt text *(53 / 64 chars)*:  
+     `CheckoutFields app dashboard and configuration presets`
+3. **Desktop Screenshot 2: Checkout Editor** (1600 × 900 px · 139 KB):
    - File: `assets/listing/screenshot_2_editor.png`
-   - Alt text: `Shopify Checkout Editor showing live drag-and-drop CheckoutFields block configuration and real-time settings inspector`
-4. **Desktop Screenshot 3: Native Order Additional Details** (1600 × 900 px · 101 KB):
+   - Alt text *(51 / 64 chars)*:  
+     `Customizing checkout fields in Shopify Theme Editor`
+4. **Desktop Screenshot 3: Order Additional Details** (1600 × 900 px · 101 KB):
    - File: `assets/listing/screenshot_3_order.png`
-   - Alt text: `Shopify Admin order details page showing custom checkout field data saved natively in Additional details note attributes`
-5. **Desktop Screenshot 4: Customer Facing One-Page Checkout** (1600 × 900 px · 77 KB):
+   - Alt text *(48 / 64 chars)*:  
+     `Custom field data saved in Shopify Order details`
+5. **Desktop Screenshot 4: Customer Checkout** (1600 × 900 px · 77 KB):
    - File: `assets/listing/screenshot_4_checkout.png`
-   - Alt text: `Shopify One-Page Checkout customer view showing live Gift Message custom field block`
+   - Alt text *(52 / 64 chars)*:  
+     `Live Gift Message field in Shopify One-Page Checkout`
 
 ---
 
