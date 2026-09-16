@@ -21,6 +21,7 @@ import {
   Modal,
 } from "@shopify/polaris";
 import { ExternalIcon } from "@shopify/polaris-icons";
+import { TitleBar } from "@shopify/app-bridge-react";
 import { authenticate } from "../shopify.server";
 import { MONTHLY_PLAN, ANNUAL_PLAN } from "../plans";
 
