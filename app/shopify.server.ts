@@ -3,12 +3,14 @@ import {
   ApiVersion,
   AppDistribution,
   BillingInterval,
+  BillingReplacementBehavior,
   shopifyApp,
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
+import { MONTHLY_PLAN, ANNUAL_PLAN, ALL_PAID_PLANS } from "./plans";
 
-export const MONTHLY_PLAN = "Monthly Pro Subscription" as const;
+export { MONTHLY_PLAN, ANNUAL_PLAN, ALL_PAID_PLANS };
 
 const shopify = shopifyApp({
   apiKey: process.env.SHOPIFY_API_KEY,
@@ -23,12 +25,24 @@ const shopify = shopifyApp({
     [MONTHLY_PLAN]: {
       lineItems: [
         {
-          amount: 12.99,
+          amount: process.env.MONTHLY_PLAN_PRICE ? parseFloat(process.env.MONTHLY_PLAN_PRICE) : 12.99,
           currencyCode: "USD",
           interval: BillingInterval.Every30Days,
         },
       ],
       trialDays: 7,
+      replacementBehavior: BillingReplacementBehavior.ApplyImmediately,
+    },
+    [ANNUAL_PLAN]: {
+      lineItems: [
+        {
+          amount: process.env.ANNUAL_PLAN_PRICE ? parseFloat(process.env.ANNUAL_PLAN_PRICE) : 99.99,
+          currencyCode: "USD",
+          interval: BillingInterval.Annual,
+        },
+      ],
+      trialDays: 7,
+      replacementBehavior: BillingReplacementBehavior.ApplyImmediately,
     },
   },
   future: {

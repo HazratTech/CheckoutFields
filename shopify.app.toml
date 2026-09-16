@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "0a84ae25144e84121165e5a3c90143ea"
-name = "Fieldy Custom Checkout Fields"
+name = "Fieldy: Custom Checkout Fields"
 application_url = "https://checkoutfields.relayworks.dev"
 embedded = true
 

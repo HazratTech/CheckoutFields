@@ -21,8 +21,8 @@ import {
   Modal,
 } from "@shopify/polaris";
 import { ExternalIcon } from "@shopify/polaris-icons";
-import { TitleBar } from "@shopify/app-bridge-react";
-import { authenticate, MONTHLY_PLAN } from "../shopify.server";
+import { authenticate } from "../shopify.server";
+import { MONTHLY_PLAN, ANNUAL_PLAN } from "../plans";
 
 async function getAppDetails(admin: any) {
   let isPartnerDev = false;
@@ -55,25 +55,36 @@ async function getAppDetails(admin: any) {
     console.error("Failed to query shop details:", err);
   }
 
-  const isTest = process.env.NODE_ENV !== "production" || isPartnerDev;
-
-  return { shopId, isPartnerDev, appHandle, isTest };
+  return { shopId, isPartnerDev, appHandle };
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, billing, admin } = await authenticate.admin(request);
-  const { shopId, appHandle, isTest } = await getAppDetails(admin);
+  const { shopId, appHandle } = await getAppDetails(admin);
 
   let hasProPlan = false;
   let subscriptionId: string | null = null;
+  let currentPlanName: string | null = null;
+  let isAnnual = false;
+  let isMonthly = false;
 
   try {
+    // Check for both Monthly and Annual subscriptions.
+    // Setting isTest: true allows test subscriptions (reviewers and dev stores)
+    // AND real production subscriptions to be recognized!
     const billingCheck = await billing.check({
-      plans: [MONTHLY_PLAN],
-      isTest,
+      plans: [MONTHLY_PLAN, ANNUAL_PLAN],
+      isTest: true,
     });
-    hasProPlan = billingCheck.hasActivePayment;
-    subscriptionId = billingCheck.appSubscriptions?.[0]?.id || null;
+
+    hasProPlan = Boolean(billingCheck.hasActivePayment);
+    if (billingCheck.appSubscriptions && billingCheck.appSubscriptions.length > 0) {
+      const activeSub = billingCheck.appSubscriptions[0];
+      subscriptionId = activeSub.id || null;
+      currentPlanName = activeSub.name || null;
+      isAnnual = currentPlanName === ANNUAL_PLAN;
+      isMonthly = currentPlanName === MONTHLY_PLAN || !isAnnual;
+    }
   } catch (error) {
     console.error("Billing check error:", error);
     hasProPlan = false;
@@ -114,29 +125,39 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     shop: session.shop,
     hasProPlan,
     subscriptionId,
+    currentPlanName,
+    isAnnual,
+    isMonthly,
     appHandle,
   });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { billing, session, admin } = await authenticate.admin(request);
-  const { shopId, appHandle, isTest } = await getAppDetails(admin);
+  const { shopId, appHandle, isPartnerDev } = await getAppDetails(admin);
   const formData = await request.formData();
   const intent = formData.get("_action");
 
-  // Handle Cancellation
+  // Determine if charge should be in test mode:
+  // Enabled if SHOPIFY_BILLING_TEST is true/unset, or in dev/non-production.
+  const isTestBilling =
+    process.env.SHOPIFY_BILLING_TEST !== "false" ||
+    process.env.NODE_ENV !== "production" ||
+    isPartnerDev;
+
+  // Handle Cancellation (Downgrade to Free)
   if (intent === "cancel") {
     try {
       const billingCheck = await billing.check({
-        plans: [MONTHLY_PLAN],
-        isTest,
+        plans: [MONTHLY_PLAN, ANNUAL_PLAN],
+        isTest: true,
       });
 
       const subscription = billingCheck.appSubscriptions?.[0];
       if (subscription?.id) {
         await billing.cancel({
           subscriptionId: subscription.id,
-          isTest,
+          isTest: isTestBilling,
           prorate: true,
         });
       }
@@ -170,52 +191,63 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
       return json({
         hasProPlan: false,
+        currentPlanName: null,
         notice: "Your Pro Plan subscription has been cancelled. Your store is now on the Free Starter tier.",
         error: null,
       });
     } catch (err: any) {
       return json({
         hasProPlan: true,
+        currentPlanName: null,
         notice: null,
         error: err?.message || "Failed to cancel subscription.",
       });
     }
   }
 
-  // Handle Upgrade
-  try {
-    const cleanShop = session.shop.replace(".myshopify.com", "");
-    return await billing.request({
-      plan: MONTHLY_PLAN,
-      isTest,
-      returnUrl: `https://admin.shopify.com/store/${cleanShop}/apps/${appHandle}`,
-    });
-  } catch (error: any) {
-    if (error instanceof Response) {
-      throw error;
-    }
+  // Handle Upgrade or Switch Plan (Monthly <-> Annual)
+  if (intent === "upgrade" || intent === "switch_plan") {
+    try {
+      const selectedPlan = formData.get("plan");
+      const targetPlan = selectedPlan === "annual" ? ANNUAL_PLAN : MONTHLY_PLAN;
+      const cleanShop = session.shop.replace(".myshopify.com", "");
 
-    const isPublicDistError =
-      error?.errorData?.some?.((e: any) =>
-        e?.message?.toLowerCase().includes("public distribution")
-      ) ||
-      error?.message?.toLowerCase().includes("public distribution");
+      return await billing.request({
+        plan: targetPlan,
+        isTest: isTestBilling,
+        returnUrl: `https://admin.shopify.com/store/${cleanShop}/apps/${appHandle}`,
+      });
+    } catch (error: any) {
+      if (error instanceof Response) {
+        throw error;
+      }
 
-    if (isPublicDistError) {
+      const isPublicDistError =
+        error?.errorData?.some?.((e: any) =>
+          e?.message?.toLowerCase().includes("public distribution")
+        ) ||
+        error?.message?.toLowerCase().includes("public distribution");
+
+      if (isPublicDistError) {
+        return json({
+          hasProPlan: false,
+          currentPlanName: null,
+          notice: null,
+          error:
+            "Shopify Billing API requirement: Go to your Shopify Partner Dashboard (partners.shopify.com) > Apps > Fieldy: Custom Checkout Fields > Distribution, and choose 'Public distribution'.",
+        });
+      }
+
       return json({
         hasProPlan: false,
+        currentPlanName: null,
         notice: null,
-        error:
-          "Shopify Billing API requirement: Go to your Shopify Partner Dashboard (partners.shopify.com) > Apps > CheckoutFields > Distribution, and choose 'Public distribution'.",
+        error: error?.message || "Failed to initiate Shopify billing charge.",
       });
     }
-
-    return json({
-      hasProPlan: false,
-      notice: null,
-      error: error?.message || "Failed to initiate Shopify billing charge.",
-    });
   }
+
+  return json({ hasProPlan: false, currentPlanName: null, notice: null, error: "Invalid action" });
 };
 
 const COMPARISON_FEATURES = [
@@ -318,13 +350,20 @@ const PRESETS = [
 ];
 
 export default function Index() {
-  const { shop, hasProPlan } = useLoaderData<typeof loader>();
+  const {
+    shop,
+    hasProPlan,
+    isAnnual: loaderIsAnnual,
+    isMonthly: loaderIsMonthly,
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
   const isPro = actionData?.hasProPlan !== undefined ? actionData.hasProPlan : hasProPlan;
+  const isAnnual = isPro && (actionData?.currentPlanName ? actionData.currentPlanName === ANNUAL_PLAN : loaderIsAnnual);
+  const isMonthly = isPro && (actionData?.currentPlanName ? actionData.currentPlanName === MONTHLY_PLAN : loaderIsMonthly || !loaderIsAnnual);
 
   const [selectedPresetIndex, setSelectedPresetIndex] = useState(0);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
@@ -333,8 +372,12 @@ export default function Index() {
   const activePreset = PRESETS[selectedPresetIndex];
   const checkoutEditorUrl = `https://${shop}/admin/settings/checkout/editor`;
 
-  const handleUpgrade = () => {
-    submit({ _action: "upgrade" }, { method: "POST" });
+  const handleUpgrade = (plan: "monthly" | "annual") => {
+    submit({ _action: "upgrade", plan }, { method: "POST" });
+  };
+
+  const handleSwitchPlan = (plan: "monthly" | "annual") => {
+    submit({ _action: "switch_plan", plan }, { method: "POST" });
   };
 
   const handleCancel = () => {
@@ -344,7 +387,7 @@ export default function Index() {
 
   return (
     <Page>
-      <TitleBar title="Fieldy Custom Checkout Fields Dashboard" />
+      <TitleBar title="Fieldy: Custom Checkout Fields Dashboard" />
       <BlockStack gap="500">
         {/* Top Notification Banner */}
         <Banner
@@ -356,6 +399,17 @@ export default function Index() {
           </p>
         </Banner>
 
+        {actionData?.notice && (
+          <Banner tone="success" onDismiss={() => {}}>
+            <p>{actionData.notice}</p>
+          </Banner>
+        )}
+        {actionData?.error && (
+          <Banner tone="critical" onDismiss={() => {}}>
+            <p>{actionData.error}</p>
+          </Banner>
+        )}
+
         {/* Hero Welcome Card */}
         <Card>
           <BlockStack gap="400">
@@ -363,10 +417,14 @@ export default function Index() {
               <BlockStack gap="100">
                 <InlineStack gap="300" blockAlign="center">
                   <Text as="h1" variant="headingLg">
-                    Fieldy Custom Checkout Fields
+                    Fieldy: Custom Checkout Fields
                   </Text>
                   <Badge tone={isPro ? "success" : "info"}>
-                    {isPro ? "Pro Plan Active" : "Free Starter Tier"}
+                    {isPro
+                      ? isAnnual
+                        ? "Pro Plan Active (Annual)"
+                        : "Pro Plan Active (Monthly)"
+                      : "Free Starter Tier"}
                   </Badge>
                 </InlineStack>
                 <Text as="p" tone="subdued">
@@ -376,7 +434,7 @@ export default function Index() {
 
               <InlineStack gap="200" blockAlign="center">
                 <Button onClick={() => setIsPlanModalOpen(true)}>
-                  {isPro ? "Pro Plan Details" : "Upgrade to Pro"}
+                  {isPro ? "Manage Plan" : "Upgrade to Pro"}
                 </Button>
                 {isPro && (
                   <Button
@@ -483,17 +541,47 @@ export default function Index() {
                   {isPro ? (
                     <BlockStack gap="300">
                       <Banner tone="success">
-                        <Text as="p" fontWeight="semibold">
-                          Pro Plan ($12.99 / month)
-                        </Text>
-                        <Text as="p" variant="bodySm">
-                          Unlimited fields and required validation are active on your store.
-                        </Text>
+                        <BlockStack gap="100">
+                          <InlineStack align="space-between" blockAlign="center">
+                            <Text as="p" fontWeight="semibold">
+                              {isAnnual
+                                ? "Annual Pro Plan ($99.99 / year)"
+                                : "Monthly Pro Plan ($12.99 / month)"}
+                            </Text>
+                            <Badge tone="success">Active</Badge>
+                          </InlineStack>
+                          <Text as="p" variant="bodySm">
+                            Unlimited fields and required validation are active on your store.
+                          </Text>
+                        </BlockStack>
                       </Banner>
 
-                      <InlineStack gap="200">
+                      {/* Requirement 1.2.3: In-App Plan Switcher */}
+                      <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                        <BlockStack gap="200">
+                          <Text as="p" variant="bodySm" fontWeight="semibold">
+                            {isAnnual ? "Need Monthly Billing?" : "Upgrade to Annual & Save 35%"}
+                          </Text>
+                          <Text as="p" variant="bodySm" tone="subdued">
+                            {isAnnual
+                              ? "Switch to flexible monthly billing at $12.99 / month."
+                              : "Switch to Annual billing at $99.99 / year ($8.33/mo) and save $55.89/year."}
+                          </Text>
+                          <Button
+                            variant="secondary"
+                            loading={isSubmitting}
+                            onClick={() => handleSwitchPlan(isAnnual ? "monthly" : "annual")}
+                          >
+                            {isAnnual
+                              ? "Switch to Monthly ($12.99/mo)"
+                              : "Switch to Annual ($99.99/yr — Save 35%)"}
+                          </Button>
+                        </BlockStack>
+                      </Box>
+
+                      <InlineStack gap="200" align="space-between" blockAlign="center">
                         <Button onClick={() => setIsPlanModalOpen(true)}>
-                          View Plan Details
+                          Compare All Plans
                         </Button>
                         <Button
                           tone="critical"
@@ -515,11 +603,51 @@ export default function Index() {
                         </Text>
                       </Banner>
 
-                      <Button
-                        variant="primary"
-                        onClick={() => setIsPlanModalOpen(true)}
-                      >
-                        Upgrade to Pro ($12.99/mo)
+                      {/* Requirement 1.2.3: Direct Annual vs Monthly Selection */}
+                      <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                        <BlockStack gap="200">
+                          <InlineStack align="space-between" blockAlign="center">
+                            <BlockStack gap="050">
+                              <Text as="span" fontWeight="semibold">
+                                Annual Pro Plan
+                              </Text>
+                              <Text as="span" variant="bodySm" tone="subdued">
+                                $99.99 / year ($8.33/mo) • Save 35%
+                              </Text>
+                            </BlockStack>
+                            <Badge tone="success">Best Value</Badge>
+                          </InlineStack>
+                          <Button
+                            variant="primary"
+                            loading={isSubmitting}
+                            onClick={() => handleUpgrade("annual")}
+                          >
+                            Start 7-Day Free Trial (Annual)
+                          </Button>
+                        </BlockStack>
+                      </Box>
+
+                      <Box padding="300" background="bg-surface-secondary" borderRadius="200">
+                        <BlockStack gap="200">
+                          <BlockStack gap="050">
+                            <Text as="span" fontWeight="semibold">
+                              Monthly Pro Plan
+                            </Text>
+                            <Text as="span" variant="bodySm" tone="subdued">
+                              $12.99 / month • Flexible monthly billing
+                            </Text>
+                          </BlockStack>
+                          <Button
+                            loading={isSubmitting}
+                            onClick={() => handleUpgrade("monthly")}
+                          >
+                            Start 7-Day Free Trial (Monthly)
+                          </Button>
+                        </BlockStack>
+                      </Box>
+
+                      <Button variant="plain" onClick={() => setIsPlanModalOpen(true)}>
+                        View Feature Comparison Table
                       </Button>
                     </BlockStack>
                   )}
@@ -543,7 +671,7 @@ export default function Index() {
                       In the left sidebar, click <strong>"+ Add block"</strong>.
                     </List.Item>
                     <List.Item>
-                      Select <strong>CheckoutFields</strong> and drag it to your desired section (Contact, Delivery, Payment).
+                      Select <strong>Fieldy: Custom Checkout Fields</strong> and drag it to your desired section (Contact, Delivery, Payment).
                     </List.Item>
                     <List.Item>
                       Configure your title, placeholder, and attribute key in real-time.
@@ -574,29 +702,21 @@ export default function Index() {
         </Layout>
       </BlockStack>
 
-      {/* Plan Details & Upgrade Modal */}
+      {/* Plan Details & Upgrade / Switch Modal */}
       <Modal
         size="large"
         open={isPlanModalOpen}
         onClose={() => setIsPlanModalOpen(false)}
-        title={isPro ? "Pro Plan Features & Tier Details" : "Upgrade to CheckoutFields Pro"}
-        primaryAction={
-          isPro
-            ? {
-                content: "Close",
-                onAction: () => setIsPlanModalOpen(false),
-              }
-            : {
-                content: "Start 7-Day Free Trial ($12.99/mo)",
-                loading: isSubmitting,
-                onAction: handleUpgrade,
-              }
-        }
+        title="Fieldy Plans & Pricing"
+        primaryAction={{
+          content: "Close",
+          onAction: () => setIsPlanModalOpen(false),
+        }}
         secondaryActions={
           isPro
             ? [
                 {
-                  content: "Cancel Subscription",
+                  content: "Cancel Subscription (Downgrade to Free)",
                   destructive: true,
                   onAction: () => {
                     setIsPlanModalOpen(false);
@@ -604,25 +724,160 @@ export default function Index() {
                   },
                 },
               ]
-            : [
-                {
-                  content: "Cancel",
-                  onAction: () => setIsPlanModalOpen(false),
-                },
-              ]
+            : undefined
         }
       >
         <Modal.Section>
-          <BlockStack gap="400">
-            <Text as="p" tone="subdued">
-              {isPro
-                ? "Your store has an active Pro Plan ($12.99/mo). All features are fully unlocked. You can cancel at any time below."
-                : "Upgrade to the Pro Plan for $12.99/month with a 7-day free trial. Unlock unlimited active fields, mandatory required field validation, and dropdown surveys."}
-            </Text>
+          <BlockStack gap="500">
+            {/* 3 Tier Cards Side-by-Side */}
+            <InlineGrid columns={["oneThird", "oneThird", "oneThird"]} gap="300">
+              {/* Free Card */}
+              <Box
+                padding="400"
+                background={!isPro ? "bg-surface-selected" : "bg-surface-secondary"}
+                borderRadius="200"
+                borderWidth="025"
+                borderColor={!isPro ? "border-focus" : "border"}
+              >
+                <BlockStack gap="300">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <Text as="h3" variant="headingSm">
+                      Free Starter
+                    </Text>
+                    {!isPro && <Badge tone="info">Current</Badge>}
+                  </InlineStack>
+                  <Text as="p" variant="headingLg">
+                    $0 <Text as="span" variant="bodySm" tone="subdued">/ month</Text>
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Essential custom field for stores with basic checkout notes.
+                  </Text>
+                  <Divider />
+                  <List type="bullet">
+                    <List.Item>1 active checkout field</List.Item>
+                    <List.Item>Text &amp; multiline inputs</List.Item>
+                    <List.Item>Optional fields only</List.Item>
+                    <List.Item>Native order note attributes</List.Item>
+                  </List>
+                  {isPro && (
+                    <Button
+                      tone="critical"
+                      variant="plain"
+                      onClick={() => {
+                        setIsPlanModalOpen(false);
+                        setIsCancelModalOpen(true);
+                      }}
+                    >
+                      Downgrade to Free
+                    </Button>
+                  )}
+                </BlockStack>
+              </Box>
+
+              {/* Monthly Pro Card */}
+              <Box
+                padding="400"
+                background={isMonthly ? "bg-surface-selected" : "bg-surface-secondary"}
+                borderRadius="200"
+                borderWidth="025"
+                borderColor={isMonthly ? "border-focus" : "border"}
+              >
+                <BlockStack gap="300">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <Text as="h3" variant="headingSm">
+                      Monthly Pro
+                    </Text>
+                    {isMonthly && <Badge tone="success">Current</Badge>}
+                  </InlineStack>
+                  <Text as="p" variant="headingLg">
+                    $12.99 <Text as="span" variant="bodySm" tone="subdued">/ month</Text>
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Flexible month-to-month billing with 7-day free trial.
+                  </Text>
+                  <Divider />
+                  <List type="bullet">
+                    <List.Item>Unlimited active fields</List.Item>
+                    <List.Item>Mandatory required validation</List.Item>
+                    <List.Item>Dropdown surveys &amp; checkboxes</List.Item>
+                    <List.Item>Priority developer support</List.Item>
+                  </List>
+                  {isMonthly ? (
+                    <Button disabled fullWidth>Current Plan</Button>
+                  ) : (
+                    <Button
+                      variant={!isPro ? "primary" : "secondary"}
+                      loading={isSubmitting}
+                      fullWidth
+                      onClick={() => {
+                        setIsPlanModalOpen(false);
+                        handleUpgrade("monthly");
+                      }}
+                    >
+                      {isAnnual ? "Switch to Monthly ($12.99/mo)" : "Start 7-Day Free Trial"}
+                    </Button>
+                  )}
+                </BlockStack>
+              </Box>
+
+              {/* Annual Pro Card */}
+              <Box
+                padding="400"
+                background={isAnnual ? "bg-surface-selected" : "bg-surface-secondary"}
+                borderRadius="200"
+                borderWidth="025"
+                borderColor={isAnnual ? "border-focus" : "border"}
+              >
+                <BlockStack gap="300">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <Text as="h3" variant="headingSm">
+                      Annual Pro
+                    </Text>
+                    {isAnnual ? (
+                      <Badge tone="success">Current</Badge>
+                    ) : (
+                      <Badge tone="success">Save 35%</Badge>
+                    )}
+                  </InlineStack>
+                  <Text as="p" variant="headingLg">
+                    $99.99 <Text as="span" variant="bodySm" tone="subdued">/ year ($8.33/mo)</Text>
+                  </Text>
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Billed annually ($55.89/year savings). Includes 7-day free trial.
+                  </Text>
+                  <Divider />
+                  <List type="bullet">
+                    <List.Item>Unlimited active fields</List.Item>
+                    <List.Item>Mandatory required validation</List.Item>
+                    <List.Item>Dropdown surveys &amp; checkboxes</List.Item>
+                    <List.Item>Priority developer support</List.Item>
+                  </List>
+                  {isAnnual ? (
+                    <Button disabled fullWidth>Current Plan</Button>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      loading={isSubmitting}
+                      fullWidth
+                      onClick={() => {
+                        setIsPlanModalOpen(false);
+                        handleUpgrade("annual");
+                      }}
+                    >
+                      {isMonthly ? "Upgrade to Annual (Save 35%)" : "Start 7-Day Free Trial"}
+                    </Button>
+                  )}
+                </BlockStack>
+              </Box>
+            </InlineGrid>
 
             <Divider />
 
+            {/* Detailed Comparison Table */}
             <BlockStack gap="200">
+              <Text as="h3" variant="headingSm">
+                Detailed Feature Matrix
+              </Text>
               {/* Table Header */}
               <Box paddingBlockEnd="100">
                 <InlineGrid columns="2fr 1fr 1fr">
@@ -633,7 +888,7 @@ export default function Index() {
                     FREE STARTER
                   </Text>
                   <Text as="span" variant="headingSm" tone="subdued">
-                    PRO ($12.99/MO)
+                    PRO (MONTHLY / ANNUAL)
                   </Text>
                 </InlineGrid>
               </Box>
