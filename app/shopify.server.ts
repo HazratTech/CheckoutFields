@@ -36,7 +36,7 @@ const shopify = shopifyApp({
     [ANNUAL_PLAN]: {
       lineItems: [
         {
-          amount: process.env.ANNUAL_PLAN_PRICE ? parseFloat(process.env.ANNUAL_PLAN_PRICE) : 99.99,
+          amount: process.env.ANNUAL_PLAN_PRICE ? parseFloat(process.env.ANNUAL_PLAN_PRICE) : 112.99,
           currencyCode: "USD",
           interval: BillingInterval.Annual,
         },

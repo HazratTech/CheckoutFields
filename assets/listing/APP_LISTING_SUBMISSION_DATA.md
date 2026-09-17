@@ -154,7 +154,7 @@ All images are saved in `assets/listing/` and meet all Shopify visual guidelines
     `$12.99 / month (7-day free trial)`  
     `Unlimited custom checkout fields, required field blocking validation, all field types (select, checkbox, number), priority support.`
   - **Plan 3: Annual Pro Subscription**  
-    `$99.99 / year (7-day free trial — Save 35%)`  
+    `$112.99 / year (7-day free trial — Save $42.89/year)`  
     `Unlimited custom checkout fields, required field blocking validation, all field types (select, checkbox, number), priority support.`
 
 ---

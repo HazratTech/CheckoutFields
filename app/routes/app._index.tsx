@@ -546,7 +546,7 @@ export default function Index() {
                           <InlineStack align="space-between" blockAlign="center">
                             <Text as="p" fontWeight="semibold">
                               {isAnnual
-                                ? "Annual Pro Plan ($99.99 / year)"
+                                ? "Annual Pro Plan ($112.99 / year)"
                                 : "Monthly Pro Plan ($12.99 / month)"}
                             </Text>
                             <Badge tone="success">Active</Badge>
@@ -561,12 +561,12 @@ export default function Index() {
                       <Box padding="300" background="bg-surface-secondary" borderRadius="200">
                         <BlockStack gap="200">
                           <Text as="p" variant="bodySm" fontWeight="semibold">
-                            {isAnnual ? "Need Monthly Billing?" : "Upgrade to Annual & Save 35%"}
+                            {isAnnual ? "Need Monthly Billing?" : "Upgrade to Annual & Save $42.89/year"}
                           </Text>
                           <Text as="p" variant="bodySm" tone="subdued">
                             {isAnnual
                               ? "Switch to flexible monthly billing at $12.99 / month."
-                              : "Switch to Annual billing at $99.99 / year ($8.33/mo) and save $55.89/year."}
+                              : "Switch to Annual billing at $112.99 / year ($9.42/mo) and save $42.89 each year."}
                           </Text>
                           <Button
                             variant="secondary"
@@ -575,7 +575,7 @@ export default function Index() {
                           >
                             {isAnnual
                               ? "Switch to Monthly ($12.99/mo)"
-                              : "Switch to Annual ($99.99/yr — Save 35%)"}
+                              : "Switch to Annual ($112.99/yr — Save $42.89)"}
                           </Button>
                         </BlockStack>
                       </Box>
@@ -613,7 +613,7 @@ export default function Index() {
                                 Annual Pro Plan
                               </Text>
                               <Text as="span" variant="bodySm" tone="subdued">
-                                $99.99 / year ($8.33/mo) • Save 35%
+                                $112.99 / year ($9.42/mo) • Save $42.89/yr
                               </Text>
                             </BlockStack>
                             <Badge tone="success">Best Value</Badge>
@@ -837,14 +837,14 @@ export default function Index() {
                     {isAnnual ? (
                       <Badge tone="success">Current</Badge>
                     ) : (
-                      <Badge tone="success">Save 35%</Badge>
+                      <Badge tone="success">Save $42.89</Badge>
                     )}
                   </InlineStack>
                   <Text as="p" variant="headingLg">
-                    $99.99 <Text as="span" variant="bodySm" tone="subdued">/ year ($8.33/mo)</Text>
+                    $112.99 <Text as="span" variant="bodySm" tone="subdued">/ year ($9.42/mo)</Text>
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Billed annually ($55.89/year savings). Includes 7-day free trial.
+                    Billed annually ($42.89/year savings). Includes 7-day free trial.
                   </Text>
                   <Divider />
                   <List type="bullet">
@@ -865,7 +865,7 @@ export default function Index() {
                         handleUpgrade("annual");
                       }}
                     >
-                      {isMonthly ? "Upgrade to Annual (Save 35%)" : "Start 7-Day Free Trial"}
+                      {isMonthly ? "Upgrade to Annual (Save $42.89)" : "Start 7-Day Free Trial"}
                     </Button>
                   )}
                 </BlockStack>
