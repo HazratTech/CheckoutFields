@@ -22,13 +22,15 @@ import {
 } from "@shopify/polaris";
 import { ExternalIcon } from "@shopify/polaris-icons";
 import { TitleBar } from "@shopify/app-bridge-react";
+import prisma from "../db.server";
 import { authenticate } from "../shopify.server";
 import { MONTHLY_PLAN, ANNUAL_PLAN } from "../plans";
 
-async function getAppDetails(admin: any) {
+async function getAppDetails(admin: any, shopDomain?: string) {
   let isPartnerDev = false;
   let shopId: string | null = null;
   let appHandle = "checkoutfields-4";
+  let metafieldTrialUsed = false;
 
   try {
     const res = await admin.graphql(`
@@ -37,6 +39,9 @@ async function getAppDetails(admin: any) {
           id
           plan {
             partnerDevelopment
+          }
+          trialUsed: metafield(namespace: "checkout_fields", key: "trial_used") {
+            value
           }
         }
         currentAppInstallation {
@@ -49,6 +54,7 @@ async function getAppDetails(admin: any) {
     const data: any = await res.json();
     shopId = data?.data?.shop?.id || null;
     isPartnerDev = Boolean(data?.data?.shop?.plan?.partnerDevelopment);
+    metafieldTrialUsed = data?.data?.shop?.trialUsed?.value === "true";
     if (data?.data?.currentAppInstallation?.app?.handle) {
       appHandle = data.data.currentAppInstallation.app.handle;
     }
@@ -56,12 +62,27 @@ async function getAppDetails(admin: any) {
     console.error("Failed to query shop details:", err);
   }
 
-  return { shopId, isPartnerDev, appHandle };
+  // Backup trial check from local database
+  let dbTrialUsed = false;
+  if (shopDomain) {
+    try {
+      const record = await prisma.trialTracker.findUnique({
+        where: { shop: shopDomain },
+      });
+      dbTrialUsed = Boolean(record?.trialUsed);
+    } catch (err) {
+      console.error("Failed to check database trial status:", err);
+    }
+  }
+
+  const hasUsedTrial = Boolean(metafieldTrialUsed || dbTrialUsed);
+
+  return { shopId, isPartnerDev, appHandle, hasUsedTrial };
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, billing, admin } = await authenticate.admin(request);
-  const { shopId, appHandle } = await getAppDetails(admin);
+  const { shopId, appHandle, hasUsedTrial: initialTrialUsed } = await getAppDetails(admin, session.shop);
 
   let hasProPlan = false;
   let subscriptionId: string | null = null;
@@ -91,9 +112,32 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     hasProPlan = false;
   }
 
-  // Sync plan status to shop app metafield so checkout extension enforces limits
+  const hasUsedTrial = initialTrialUsed || hasProPlan;
+
+  // Sync plan status and trial usage to shop app metafield so checkout extension enforces limits
+  // And trial state survives app uninstall / reinstall cycles permanently on the shop object
   if (shopId) {
     try {
+      const metafields: any[] = [
+        {
+          namespace: "checkout_fields",
+          key: "plan",
+          type: "single_line_text_field",
+          value: hasProPlan ? "pro" : "free",
+          ownerId: shopId,
+        },
+      ];
+
+      if (hasUsedTrial) {
+        metafields.push({
+          namespace: "checkout_fields",
+          key: "trial_used",
+          type: "single_line_text_field",
+          value: "true",
+          ownerId: shopId,
+        });
+      }
+
       await admin.graphql(
         `#graphql
         mutation SetPlanMetafield($metafields: [MetafieldsSetInput!]!) {
@@ -104,21 +148,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           }
         }`,
         {
-          variables: {
-            metafields: [
-              {
-                namespace: "checkout_fields",
-                key: "plan",
-                type: "single_line_text_field",
-                value: hasProPlan ? "pro" : "free",
-                ownerId: shopId,
-              },
-            ],
-          },
+          variables: { metafields },
         }
       );
     } catch (err) {
       console.error("Metafield sync error:", err);
+    }
+  }
+
+  // Also persist trial status in local database
+  if (hasUsedTrial && session.shop) {
+    try {
+      await prisma.trialTracker.upsert({
+        where: { shop: session.shop },
+        create: { shop: session.shop, trialUsed: true },
+        update: { trialUsed: true },
+      });
+    } catch (err) {
+      console.error("Database trial sync error in loader:", err);
     }
   }
 
@@ -130,21 +177,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     isAnnual,
     isMonthly,
     appHandle,
+    hasUsedTrial,
   });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { billing, session, admin } = await authenticate.admin(request);
-  const { shopId, appHandle, isPartnerDev } = await getAppDetails(admin);
+  const { shopId, appHandle, isPartnerDev, hasUsedTrial } = await getAppDetails(admin, session.shop);
   const formData = await request.formData();
   const intent = formData.get("_action");
 
   // Determine if charge should be in test mode:
-  // Enabled if SHOPIFY_BILLING_TEST is true/unset, or in dev/non-production.
+  // - Real paying merchants on live stores: isTestBilling = false (REAL CHARGES, REAL MONEY COLLECTED!)
+  // - Partner development stores & reviewers: isTestBilling = true (dev stores cannot be charged real money per Shopify)
+  // - Override via SHOPIFY_BILLING_TEST="true" if explicitly set in environment
   const isTestBilling =
-    process.env.SHOPIFY_BILLING_TEST !== "false" ||
-    process.env.NODE_ENV !== "production" ||
-    isPartnerDev;
+    process.env.SHOPIFY_BILLING_TEST === "true" ||
+    Boolean(isPartnerDev);
 
   // Handle Cancellation (Downgrade to Free)
   if (intent === "cancel") {
@@ -158,12 +207,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       if (subscription?.id) {
         await billing.cancel({
           subscriptionId: subscription.id,
-          isTest: isTestBilling,
           prorate: true,
         });
       }
 
-      // Sync metafield back to free
+      // Sync metafield back to free (keep trial_used true permanently)
       if (shopId) {
         await admin.graphql(
           `#graphql
@@ -213,11 +261,58 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const targetPlan = selectedPlan === "annual" ? ANNUAL_PLAN : MONTHLY_PLAN;
       const cleanShop = session.shop.replace(".myshopify.com", "");
 
+      // If merchant previously used trial or is reinstalling, pass trialDays: 0 to charge immediately
+      const trialDaysToGrant = hasUsedTrial ? 0 : 7;
+
+      // Mark trial as used immediately in both shop metafield and database
+      if (shopId) {
+        try {
+          await admin.graphql(
+            `#graphql
+            mutation SetTrialUsedMetafield($metafields: [MetafieldsSetInput!]!) {
+              metafieldsSet(metafields: $metafields) {
+                userErrors {
+                  message
+                }
+              }
+            }`,
+            {
+              variables: {
+                metafields: [
+                  {
+                    namespace: "checkout_fields",
+                    key: "trial_used",
+                    type: "single_line_text_field",
+                    value: "true",
+                    ownerId: shopId,
+                  },
+                ],
+              },
+            }
+          );
+        } catch (e) {
+          console.error("Failed to mark trial_used metafield in action:", e);
+        }
+      }
+
+      if (session.shop) {
+        try {
+          await prisma.trialTracker.upsert({
+            where: { shop: session.shop },
+            create: { shop: session.shop, trialUsed: true },
+            update: { trialUsed: true },
+          });
+        } catch (e) {
+          console.error("Failed to mark trial_used in DB:", e);
+        }
+      }
+
       return await billing.request({
         plan: targetPlan,
         isTest: isTestBilling,
+        trialDays: trialDaysToGrant,
         returnUrl: `https://admin.shopify.com/store/${cleanShop}/apps/${appHandle}`,
-      });
+      } as any);
     } catch (error: any) {
       if (error instanceof Response) {
         throw error;
@@ -374,6 +469,7 @@ export default function Index() {
     hasProPlan,
     isAnnual: loaderIsAnnual,
     isMonthly: loaderIsMonthly,
+    hasUsedTrial,
   } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const submit = useSubmit();
@@ -641,7 +737,7 @@ export default function Index() {
                             loading={isSubmitting}
                             onClick={() => handleUpgrade("annual")}
                           >
-                            Start 7-Day Free Trial (Annual)
+                            {hasUsedTrial ? "Upgrade to Annual ($39.99/yr)" : "Start 7-Day Free Trial (Annual)"}
                           </Button>
                         </BlockStack>
                       </Box>
@@ -660,7 +756,7 @@ export default function Index() {
                             loading={isSubmitting}
                             onClick={() => handleUpgrade("monthly")}
                           >
-                            Start 7-Day Free Trial (Monthly)
+                            {hasUsedTrial ? "Upgrade to Monthly ($4.99/mo)" : "Start 7-Day Free Trial (Monthly)"}
                           </Button>
                         </BlockStack>
                       </Box>
@@ -814,7 +910,9 @@ export default function Index() {
                     $4.99 <Text as="span" variant="bodySm" tone="subdued">/ month</Text>
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Flexible month-to-month billing with 7-day free trial.
+                    {hasUsedTrial
+                      ? "Flexible month-to-month billing."
+                      : "Flexible month-to-month billing with 7-day free trial."}
                   </Text>
                   <Divider />
                   <List type="bullet">
@@ -838,7 +936,11 @@ export default function Index() {
                         handleUpgrade("monthly");
                       }}
                     >
-                      {isAnnual ? "Switch to Monthly ($4.99/mo)" : "Start 7-Day Free Trial"}
+                      {isAnnual
+                        ? "Switch to Monthly ($4.99/mo)"
+                        : hasUsedTrial
+                        ? "Upgrade to Monthly ($4.99/mo)"
+                        : "Start 7-Day Free Trial"}
                     </Button>
                   )}
                 </BlockStack>
@@ -867,7 +969,9 @@ export default function Index() {
                     $39.99 <Text as="span" variant="bodySm" tone="subdued">/ year ($3.33/mo)</Text>
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Billed annually ($19.89/year savings). Includes 7-day free trial.
+                    {hasUsedTrial
+                      ? "Billed annually ($19.89/year savings)."
+                      : "Billed annually ($19.89/year savings). Includes 7-day free trial."}
                   </Text>
                   <Divider />
                   <List type="bullet">
@@ -891,7 +995,11 @@ export default function Index() {
                         handleUpgrade("annual");
                       }}
                     >
-                      {isMonthly ? "Upgrade to Annual (Save 33%)" : "Start 7-Day Free Trial"}
+                      {isMonthly
+                        ? "Upgrade to Annual (Save 33%)"
+                        : hasUsedTrial
+                        ? "Upgrade to Annual ($39.99/yr)"
+                        : "Start 7-Day Free Trial"}
                     </Button>
                   )}
                 </BlockStack>
