@@ -25,7 +25,7 @@ const shopify = shopifyApp({
     [MONTHLY_PLAN]: {
       lineItems: [
         {
-          amount: process.env.MONTHLY_PLAN_PRICE ? parseFloat(process.env.MONTHLY_PLAN_PRICE) : 12.99,
+          amount: process.env.MONTHLY_PLAN_PRICE ? parseFloat(process.env.MONTHLY_PLAN_PRICE) : 4.99,
           currencyCode: "USD",
           interval: BillingInterval.Every30Days,
         },
@@ -36,7 +36,7 @@ const shopify = shopifyApp({
     [ANNUAL_PLAN]: {
       lineItems: [
         {
-          amount: process.env.ANNUAL_PLAN_PRICE ? parseFloat(process.env.ANNUAL_PLAN_PRICE) : 112.99,
+          amount: process.env.ANNUAL_PLAN_PRICE ? parseFloat(process.env.ANNUAL_PLAN_PRICE) : 39.99,
           currencyCode: "USD",
           interval: BillingInterval.Annual,
         },

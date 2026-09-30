@@ -149,13 +149,23 @@ All images are saved in `assets/listing/` and meet all Shopify visual guidelines
 - **Pricing Model**: Recurring Subscription with Free Tier
   - **Plan 1: Free Starter**  
     `Free`  
-    `1 active custom checkout field, optional validation, full Shopify One-Page Checkout support.`
+    `1 active custom checkout field total, optional inputs, full Shopify One-Page Checkout support, zero external database, no watermark.`
   - **Plan 2: Monthly Pro Subscription**  
-    `$12.99 / month (7-day free trial)`  
-    `Unlimited custom checkout fields, required field blocking validation, all field types (select, checkbox, number), priority support.`
+    `$4.99 / month (7-day free trial)`  
+    `Unlimited custom checkout fields, required field blocking validation, dropdown surveys, consent checkboxes, priority support.`
   - **Plan 3: Annual Pro Subscription**  
-    `$112.99 / year (7-day free trial — Save $42.89/year)`  
-    `Unlimited custom checkout fields, required field blocking validation, all field types (select, checkbox, number), priority support.`
+    `$39.99 / year (7-day free trial — Save 33% / $19.89/year)`  
+    `Everything in Pro billed annually at $3.33/mo equivalent. Unlimited fields, blocking validation, dropdown surveys, priority support.`
+
+### Top Features for Partner Dashboard (Copy & paste into the 8 feature slots):
+1. `Unlimited active custom checkout fields`
+2. `Mandatory required field blocking validation`
+3. `Dropdown select surveys for marketing attribution`
+4. `Terms & conditions legal consent checkboxes`
+5. `Number and quantity custom input fields`
+6. `Saved directly to native Order Note Attributes`
+7. `Zero third-party database / 100% data privacy`
+8. `Priority developer support and setup assistance`
 
 ---
 

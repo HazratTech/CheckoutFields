@@ -212,7 +212,7 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
               The Free Starter plan is limited to 1 active checkout field.
             </Text>
             <Text size="small">
-              To use multiple simultaneous fields (e.g., Gift Note + Delivery Instructions), upgrade to the Pro Plan ($12.99/mo) in the CheckoutFields app dashboard.
+              To use multiple simultaneous fields (e.g., Gift Note + Delivery Instructions), upgrade to the Pro Plan ($4.99/mo) in the Fieldy app dashboard.
             </Text>
           </BlockStack>
         </Banner>
@@ -230,11 +230,11 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
         <Banner status="info" title="Pro Plan Feature">
           <Text size="small">
             {rawType === 'select'
-              ? 'Dropdown select surveys require the Pro Plan ($12.99/mo).'
+              ? 'Dropdown select surveys require the Pro Plan ($4.99/mo).'
               : rawType === 'checkbox'
-              ? 'Mandatory terms & conditions checkboxes require the Pro Plan ($12.99/mo).'
-              : 'Number input fields require the Pro Plan ($12.99/mo).'}
-            {' '}On Free Starter, this field defaults to standard text. Upgrade in CheckoutFields to enable.
+              ? 'Mandatory terms & conditions checkboxes require the Pro Plan ($4.99/mo).'
+              : 'Number input fields require the Pro Plan ($4.99/mo).'}
+            {' '}On Free Starter, this field defaults to standard text. Upgrade in Fieldy to enable.
           </Text>
         </Banner>
       )}

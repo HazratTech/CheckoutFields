@@ -12,7 +12,7 @@ CheckoutFields is a Shopify Checkout UI Extension and embedded app that allows m
   - **Shopify Plus:** Place custom fields directly into Information, Shipping, and Payment checkout steps (`purchase.checkout.block.render`).
   - **Non-Plus (Basic, Shopify, Advanced):** Place fields on the Thank You page (`purchase.thank-you.block.render`) and Order Status page (`customer-account.order-status.block.render`).
 - **Drag & Drop Customization:** Merchants configure field labels, placeholders, input types, and required toggles directly in the native Shopify Checkout Editor sidebar.
-- **Shopify App Billing:** Built-in monthly subscription tier ($12.99/mo with a 7-day trial).
+- **Shopify App Billing:** Built-in subscription tiers ($4.99/mo or $39.99/yr with a 7-day trial).
 
 ---
 

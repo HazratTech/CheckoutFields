@@ -254,49 +254,67 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const COMPARISON_FEATURES = [
   {
     feature: "Active Checkout Fields",
-    description: "Number of fields you can place in checkout simultaneously",
-    free: "1 field",
+    description: "Total number of custom fields you can place in checkout simultaneously",
+    free: "1 field total",
     pro: "Unlimited fields",
   },
   {
-    feature: "Required Field Validation",
-    description: "Mandate customer input before checkout progression",
+    feature: "One-Page Checkout Placement",
+    description: "Render anywhere in Contact, Delivery, Payment, or Thank You sections",
+    free: "Supported",
+    pro: "Supported (Plus & Standard)",
+  },
+  {
+    feature: "Required Field Blocking Validation",
+    description: "Block customer progression until mandatory fields are filled out",
     free: "Optional only",
     pro: "Enforced blocking",
   },
   {
-    feature: "Supported Input Types",
-    description: "Available field components in the Checkout Editor",
+    feature: "Supported Field Types",
+    description: "Available field components in the Shopify Checkout Editor",
     free: "Text, Multiline",
     pro: "Text, Multiline, Select, Checkbox, Number",
   },
   {
+    feature: "Attribution Surveys",
+    description: "Zero-party marketing surveys (e.g., 'How did you hear about us?')",
+    free: "Not available",
+    pro: "Custom select dropdowns",
+  },
+  {
+    feature: "Terms & Conditions Consent",
+    description: "Mandatory buyer agreement checkbox before order placement",
+    free: "Not available",
+    pro: "Enforced consent checkbox",
+  },
+  {
     feature: "B2B & Tax Compliance",
-    description: "Enforce VAT or Tax ID numbers before order confirmation",
+    description: "Collect VAT numbers or company registration numbers",
     free: "Optional input",
     pro: "Mandatory validation",
   },
   {
-    feature: "Attribution Surveys",
-    description: "Dropdown surveys for customer acquisition tracking",
-    free: "Not available",
-    pro: "Select dropdowns",
+    feature: "Native Order Storage (Zero Third-Party DB)",
+    description: "Saved in Order Note Attributes under Additional details (No external DB)",
+    free: "100% Native",
+    pro: "100% Native",
   },
   {
-    feature: "Terms & Conditions",
-    description: "Mandatory buyer consent checkbox before payment",
-    free: "Not available",
-    pro: "Enforced checkbox",
+    feature: "Third-Party Shipping & ERP Sync",
+    description: "Automatic sync with ShipStation, Klaviyo, warehouse ERPs, and WMS",
+    free: "Supported",
+    pro: "Supported",
   },
   {
-    feature: "Shopify Admin Order Storage",
-    description: "Saved in Order Note Attributes under Additional details",
-    free: "Native storage",
-    pro: "Native storage",
+    feature: "Watermark / App Branding",
+    description: "Branding or watermarks displayed on customer checkout",
+    free: "No Watermark",
+    pro: "No Watermark",
   },
   {
     feature: "Technical Support",
-    description: "Assistance with checkout setup and configuration",
+    description: "Direct assistance with checkout setup and field configuration",
     free: "Standard documentation",
     pro: "Priority developer support",
   },
@@ -546,8 +564,8 @@ export default function Index() {
                           <InlineStack align="space-between" blockAlign="center">
                             <Text as="p" fontWeight="semibold">
                               {isAnnual
-                                ? "Annual Pro Plan ($112.99 / year)"
-                                : "Monthly Pro Plan ($12.99 / month)"}
+                                ? "Annual Pro Plan ($39.99 / year)"
+                                : "Monthly Pro Plan ($4.99 / month)"}
                             </Text>
                             <Badge tone="success">Active</Badge>
                           </InlineStack>
@@ -561,12 +579,12 @@ export default function Index() {
                       <Box padding="300" background="bg-surface-secondary" borderRadius="200">
                         <BlockStack gap="200">
                           <Text as="p" variant="bodySm" fontWeight="semibold">
-                            {isAnnual ? "Need Monthly Billing?" : "Upgrade to Annual & Save $42.89/year"}
+                            {isAnnual ? "Need Monthly Billing?" : "Upgrade to Annual & Save 33%"}
                           </Text>
                           <Text as="p" variant="bodySm" tone="subdued">
                             {isAnnual
-                              ? "Switch to flexible monthly billing at $12.99 / month."
-                              : "Switch to Annual billing at $112.99 / year ($9.42/mo) and save $42.89 each year."}
+                              ? "Switch to flexible monthly billing at $4.99 / month."
+                              : "Switch to Annual billing at $39.99 / year ($3.33/mo) and save $19.89 each year."}
                           </Text>
                           <Button
                             variant="secondary"
@@ -574,8 +592,8 @@ export default function Index() {
                             onClick={() => handleSwitchPlan(isAnnual ? "monthly" : "annual")}
                           >
                             {isAnnual
-                              ? "Switch to Monthly ($12.99/mo)"
-                              : "Switch to Annual ($112.99/yr — Save $42.89)"}
+                              ? "Switch to Monthly ($4.99/mo)"
+                              : "Switch to Annual ($39.99/yr — Save 33%)"}
                           </Button>
                         </BlockStack>
                       </Box>
@@ -613,7 +631,7 @@ export default function Index() {
                                 Annual Pro Plan
                               </Text>
                               <Text as="span" variant="bodySm" tone="subdued">
-                                $112.99 / year ($9.42/mo) • Save $42.89/yr
+                                $39.99 / year ($3.33/mo) • Save 33%
                               </Text>
                             </BlockStack>
                             <Badge tone="success">Best Value</Badge>
@@ -635,7 +653,7 @@ export default function Index() {
                               Monthly Pro Plan
                             </Text>
                             <Text as="span" variant="bodySm" tone="subdued">
-                              $12.99 / month • Flexible monthly billing
+                              $4.99 / month • Flexible monthly billing
                             </Text>
                           </BlockStack>
                           <Button
@@ -755,10 +773,12 @@ export default function Index() {
                   </Text>
                   <Divider />
                   <List type="bullet">
-                    <List.Item>1 active checkout field</List.Item>
-                    <List.Item>Text &amp; multiline inputs</List.Item>
-                    <List.Item>Optional fields only</List.Item>
-                    <List.Item>Native order note attributes</List.Item>
+                    <List.Item>1 active checkout field total</List.Item>
+                    <List.Item>Textbox &amp; multiline inputs</List.Item>
+                    <List.Item>Native One-Page Checkout integration</List.Item>
+                    <List.Item>Native Order Note Attributes (No external DB)</List.Item>
+                    <List.Item>Inherits theme styling &amp; fonts</List.Item>
+                    <List.Item>No watermark / zero app branding</List.Item>
                   </List>
                   {isPro && (
                     <Button
@@ -791,16 +811,19 @@ export default function Index() {
                     {isMonthly && <Badge tone="success">Current</Badge>}
                   </InlineStack>
                   <Text as="p" variant="headingLg">
-                    $12.99 <Text as="span" variant="bodySm" tone="subdued">/ month</Text>
+                    $4.99 <Text as="span" variant="bodySm" tone="subdued">/ month</Text>
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
                     Flexible month-to-month billing with 7-day free trial.
                   </Text>
                   <Divider />
                   <List type="bullet">
-                    <List.Item>Unlimited active fields</List.Item>
-                    <List.Item>Mandatory required validation</List.Item>
-                    <List.Item>Dropdown surveys &amp; checkboxes</List.Item>
+                    <List.Item>Everything in Free Plan</List.Item>
+                    <List.Item>Unlimited active checkout fields</List.Item>
+                    <List.Item>Mandatory required blocking validation</List.Item>
+                    <List.Item>Dropdown surveys for attribution</List.Item>
+                    <List.Item>Terms &amp; conditions consent checkbox</List.Item>
+                    <List.Item>Number &amp; quantity inputs</List.Item>
                     <List.Item>Priority developer support</List.Item>
                   </List>
                   {isMonthly ? (
@@ -815,7 +838,7 @@ export default function Index() {
                         handleUpgrade("monthly");
                       }}
                     >
-                      {isAnnual ? "Switch to Monthly ($12.99/mo)" : "Start 7-Day Free Trial"}
+                      {isAnnual ? "Switch to Monthly ($4.99/mo)" : "Start 7-Day Free Trial"}
                     </Button>
                   )}
                 </BlockStack>
@@ -837,21 +860,24 @@ export default function Index() {
                     {isAnnual ? (
                       <Badge tone="success">Current</Badge>
                     ) : (
-                      <Badge tone="success">Save $42.89</Badge>
+                      <Badge tone="success">Save 33%</Badge>
                     )}
                   </InlineStack>
                   <Text as="p" variant="headingLg">
-                    $112.99 <Text as="span" variant="bodySm" tone="subdued">/ year ($9.42/mo)</Text>
+                    $39.99 <Text as="span" variant="bodySm" tone="subdued">/ year ($3.33/mo)</Text>
                   </Text>
                   <Text as="p" variant="bodySm" tone="subdued">
-                    Billed annually ($42.89/year savings). Includes 7-day free trial.
+                    Billed annually ($19.89/year savings). Includes 7-day free trial.
                   </Text>
                   <Divider />
                   <List type="bullet">
-                    <List.Item>Unlimited active fields</List.Item>
-                    <List.Item>Mandatory required validation</List.Item>
+                    <List.Item>Everything in Monthly Pro Plan</List.Item>
+                    <List.Item>Billed annually ($19.89/yr savings)</List.Item>
+                    <List.Item>Lowest monthly rate ($3.33/mo)</List.Item>
+                    <List.Item>Unlimited active checkout fields</List.Item>
+                    <List.Item>Mandatory required blocking validation</List.Item>
                     <List.Item>Dropdown surveys &amp; checkboxes</List.Item>
-                    <List.Item>Priority developer support</List.Item>
+                    <List.Item>Priority setup &amp; developer support</List.Item>
                   </List>
                   {isAnnual ? (
                     <Button disabled fullWidth>Current Plan</Button>
@@ -865,7 +891,7 @@ export default function Index() {
                         handleUpgrade("annual");
                       }}
                     >
-                      {isMonthly ? "Upgrade to Annual (Save $42.89)" : "Start 7-Day Free Trial"}
+                      {isMonthly ? "Upgrade to Annual (Save 33%)" : "Start 7-Day Free Trial"}
                     </Button>
                   )}
                 </BlockStack>
