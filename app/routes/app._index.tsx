@@ -66,7 +66,7 @@ async function getAppDetails(admin: any, shopDomain?: string) {
   let dbTrialUsed = false;
   if (shopDomain) {
     try {
-      const record = await prisma.trialTracker.findUnique({
+      const record = await (prisma as any).trialTracker?.findUnique({
         where: { shop: shopDomain },
       });
       dbTrialUsed = Boolean(record?.trialUsed);
@@ -159,7 +159,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Also persist trial status in local database
   if (hasUsedTrial && session.shop) {
     try {
-      await prisma.trialTracker.upsert({
+      await (prisma as any).trialTracker?.upsert({
         where: { shop: session.shop },
         create: { shop: session.shop, trialUsed: true },
         update: { trialUsed: true },
@@ -297,7 +297,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
       if (session.shop) {
         try {
-          await prisma.trialTracker.upsert({
+          await (prisma as any).trialTracker?.upsert({
             where: { shop: session.shop },
             create: { shop: session.shop, trialUsed: true },
             update: { trialUsed: true },
