@@ -23,6 +23,8 @@ export function CheckoutFieldComponent() {
   const isEditor = Boolean(editor);
   const api = useApi();
 
+  console.log('[Fieldy DEBUG] CheckoutFieldComponent render. isEditor:', isEditor, 'settings:', settings);
+
   // Subscription plan check: Strictly requires shop metafield checkout_fields.plan === 'pro'
   const planEntry = Array.isArray(appMetafields)
     ? appMetafields.find(

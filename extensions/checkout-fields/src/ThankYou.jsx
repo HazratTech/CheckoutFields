@@ -7,9 +7,14 @@ import {
   Banner,
 } from '@shopify/ui-extensions-react/checkout';
 
+console.log('[Fieldy DEBUG] ThankYou.jsx module loaded and registering target purchase.thank-you.block.render');
+
 export default reactExtension(
   'purchase.thank-you.block.render',
-  () => <ThankYouComponent />
+  (api) => {
+    console.log('[Fieldy DEBUG] reactExtension render callback executing for purchase.thank-you.block.render. API:', api);
+    return <ThankYouComponent />;
+  }
 );
 
 function ThankYouComponent() {
