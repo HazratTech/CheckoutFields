@@ -6,9 +6,8 @@ import {
   useBuyerJourneyIntercept,
   useAppMetafields,
   useExtensionEditor,
-  useShippingAddress,
+  useApi,
   BlockStack,
-  InlineLayout,
   TextField,
   Select,
   Checkbox,
@@ -16,34 +15,86 @@ import {
   Banner,
 } from '@shopify/ui-extensions-react/checkout';
 
-// Module-level registry tracking all CheckoutFields blocks rendered on the current page
-let instanceRegistry = [];
-const registryListeners = new Set();
+export function CheckoutFieldComponent() {
+  const settings = useSettings();
+  const applyAttributeChange = useApplyAttributeChange();
+  const appMetafields = useAppMetafields() || [];
+  const editor = useExtensionEditor();
+  const isEditor = Boolean(editor);
+  const api = useApi();
 
-function registerInstance(id) {
-  if (!instanceRegistry.includes(id)) {
-    instanceRegistry.push(id);
-    registryListeners.forEach((fn) => fn());
-  }
-}
+  // Subscription plan check: Strictly requires shop metafield checkout_fields.plan === 'pro'
+  const planEntry = appMetafields.find(
+    (m) =>
+      (m.metafield?.namespace === 'checkout_fields' && m.metafield?.key === 'plan') ||
+      (m.namespace === 'checkout_fields' && m.key === 'plan')
+  );
+  const rawPlanValue = planEntry?.metafield?.value ?? planEntry?.value;
+  const isProStore = String(rawPlanValue || '').toLowerCase().trim() === 'pro';
 
-function unregisterInstance(id) {
-  instanceRegistry = instanceRegistry.filter((item) => item !== id);
-  registryListeners.forEach((fn) => fn());
-}
+  // Settings from Checkout Editor
+  const title = String(settings?.field_title || 'Custom Field');
+  const rawType = String(settings?.field_type || 'text').toLowerCase().trim();
+  const placeholder = settings?.field_placeholder ? String(settings.field_placeholder) : '';
+  const helpText = settings?.field_help_text ? String(settings.field_help_text) : '';
+  const rawOptions = settings?.select_options ? String(settings.select_options) : '';
+  const isRequired = Boolean(
+    settings?.field_required === true || settings?.field_required === 'true'
+  );
 
-function getInstanceIndex(id) {
-  return instanceRegistry.indexOf(id);
-}
+  // Character Limit Setting
+  const rawMaxChars = settings?.max_characters;
+  const maxChars = rawMaxChars ? parseInt(String(rawMaxChars), 10) : 0;
 
-// Sub-component specifically for checkout journey intercept (only rendered on checkout surface)
-function CheckoutValidationInterceptor({
-  canEnforceRequired,
-  effectiveType,
-  value,
-  title,
-  setValidationError,
-}) {
+  // Country / Geo-Targeting Setting
+  const targetCountriesRaw = String(settings?.target_countries || '').trim();
+  const targetCountryList = useMemo(() => {
+    if (!targetCountriesRaw) return [];
+    return targetCountriesRaw
+      .split(/[\s,]+/)
+      .map((c) => c.trim().toUpperCase())
+      .filter(Boolean);
+  }, [targetCountriesRaw]);
+
+  // Field Type Gating:
+  // Free Starter: text, multiline
+  // Pro Plan: select, checkbox, number, date
+  const isProFieldType =
+    rawType === 'select' ||
+    rawType === 'checkbox' ||
+    rawType === 'number' ||
+    rawType === 'date';
+  const isGatedFieldType = !isProStore && isProFieldType;
+  const effectiveType = isGatedFieldType
+    ? rawType === 'multiline'
+      ? 'multiline'
+      : 'text'
+    : rawType;
+
+  // Required Field Gating: Pro Plan only
+  const canEnforceRequired = isProStore && isRequired;
+
+  // Determine attribute key
+  const attributeKey = useMemo(() => {
+    const key = settings?.attribute_key;
+    if (key && typeof key === 'string' && key.trim().length > 0) {
+      return key.trim();
+    }
+    return title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'custom_field';
+  }, [settings?.attribute_key, title]);
+
+  // Pre-populate value from existing order attributes
+  const [savedAttributeValue] = useAttributeValues([attributeKey]);
+  const [value, setValue] = useState(savedAttributeValue ?? '');
+  const [validationError, setValidationError] = useState('');
+
+  useEffect(() => {
+    if (savedAttributeValue !== undefined && savedAttributeValue !== null) {
+      setValue((curr) => (curr === '' ? savedAttributeValue : curr));
+    }
+  }, [savedAttributeValue]);
+
+  // Intercept checkout navigation if required field is empty (Pro Plan only)
   useBuyerJourneyIntercept(
     useCallback(
       ({ canBlockProgress }) => {
@@ -85,117 +136,9 @@ function CheckoutValidationInterceptor({
           },
         };
       },
-      [canEnforceRequired, effectiveType, value, title, setValidationError]
+      [canEnforceRequired, value, effectiveType, title]
     )
   );
-
-  return null;
-}
-
-export function CheckoutFieldComponent({ surface = 'checkout' }) {
-  const settings = useSettings();
-  const applyAttributeChange = useApplyAttributeChange();
-  const appMetafields = useAppMetafields() || [];
-  const editor = useExtensionEditor();
-  const isEditor = Boolean(editor);
-  const shippingAddress = useShippingAddress();
-
-  // Stable identifier for this component instance
-  const [instanceId] = useState(() => Math.random().toString(36).substring(2, 11));
-  const [instanceIndex, setInstanceIndex] = useState(() => getInstanceIndex(instanceId));
-
-  useEffect(() => {
-    registerInstance(instanceId);
-    setInstanceIndex(getInstanceIndex(instanceId));
-
-    const onRegistryChange = () => {
-      setInstanceIndex(getInstanceIndex(instanceId));
-    };
-    registryListeners.add(onRegistryChange);
-
-    return () => {
-      registryListeners.delete(onRegistryChange);
-      unregisterInstance(instanceId);
-    };
-  }, [instanceId]);
-
-  // Subscription plan check: Strictly requires shop metafield checkout_fields.plan === 'pro'
-  const planEntry = appMetafields.find(
-    (m) =>
-      (m.metafield?.namespace === 'checkout_fields' && m.metafield?.key === 'plan') ||
-      (m.namespace === 'checkout_fields' && m.key === 'plan')
-  );
-  const rawPlanValue = planEntry?.metafield?.value ?? planEntry?.value;
-  const isProStore = String(rawPlanValue || '').toLowerCase().trim() === 'pro';
-
-  // Free Starter plan allows exactly 1 active field (index 0). Blocks at index >= 1 exceed the limit.
-  const isOverFieldLimit = !isProStore && instanceIndex > 0;
-
-  // Settings from Checkout Editor
-  const title = String(settings?.field_title || 'Custom Field');
-  const rawType = String(settings?.field_type || 'text').toLowerCase().trim();
-  const placeholder = settings?.field_placeholder ? String(settings.field_placeholder) : '';
-  const helpText = settings?.field_help_text ? String(settings.field_help_text) : '';
-  const rawOptions = settings?.select_options ? String(settings.select_options) : '';
-  const isRequired = Boolean(
-    settings?.field_required === true || settings?.field_required === 'true'
-  );
-
-  // Character Limit Setting
-  const rawMaxChars = settings?.max_characters;
-  const maxChars = rawMaxChars ? parseInt(String(rawMaxChars), 10) : 0;
-
-  // Country / Geo-Targeting Setting (e.g., "US, CA" or "GB, DE, FR")
-  const targetCountriesRaw = String(settings?.target_countries || '').trim();
-  const targetCountryList = useMemo(() => {
-    if (!targetCountriesRaw) return [];
-    return targetCountriesRaw
-      .split(/[\s,]+/)
-      .map((c) => c.trim().toUpperCase())
-      .filter(Boolean);
-  }, [targetCountriesRaw]);
-
-  // Field Type Gating:
-  // Free Starter: text, multiline
-  // Pro Plan: select (dropdown surveys), checkbox (legal consent), number, date
-  const isProFieldType =
-    rawType === 'select' ||
-    rawType === 'checkbox' ||
-    rawType === 'number' ||
-    rawType === 'date';
-  const isGatedFieldType = !isProStore && isProFieldType;
-  // Fallback for gated types on Free tier: multiline stays multiline, otherwise single-line text
-  const effectiveType = isGatedFieldType
-    ? rawType === 'multiline'
-      ? 'multiline'
-      : 'text'
-    : rawType;
-
-  // Required Field Gating:
-  // Blocking validation is strictly gated to the Pro Plan and checkout surface
-  const canEnforceRequired = isProStore && isRequired && surface === 'checkout';
-
-  // Determine attribute key
-  const attributeKey = useMemo(() => {
-    const key = settings?.attribute_key;
-    if (key && typeof key === 'string' && key.trim().length > 0) {
-      return key.trim();
-    }
-    // Fallback: derive from title
-    return title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-  }, [settings?.attribute_key, title]);
-
-  // Pre-populate value from existing order attributes if returning to this step
-  const [savedAttributeValue] = useAttributeValues([attributeKey]);
-  const [value, setValue] = useState(savedAttributeValue ?? '');
-  const [validationError, setValidationError] = useState('');
-
-  // Sync value if saved attribute loads asynchronously or on page refresh
-  useEffect(() => {
-    if (savedAttributeValue !== undefined && savedAttributeValue !== null) {
-      setValue((curr) => (curr === '' ? savedAttributeValue : curr));
-    }
-  }, [savedAttributeValue]);
 
   // Parse select options
   const selectOptions = useMemo(() => {
@@ -211,7 +154,7 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     ];
   }, [rawOptions]);
 
-  // Save value to order attributes (with character limit enforcement)
+  // Save value to order attributes
   const handleChange = useCallback(
     async (newValue) => {
       let valStr = String(newValue ?? '');
@@ -220,7 +163,6 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
       }
       setValue(valStr);
 
-      // Clear error immediately if user entered valid input
       const isValid =
         effectiveType === 'checkbox' ? valStr === 'true' : valStr.trim().length > 0;
       if (isValid) {
@@ -240,8 +182,8 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     [applyAttributeChange, attributeKey, effectiveType, maxChars]
   );
 
-  // 1. GEO-TARGETING FILTER
-  const buyerCountry = shippingAddress?.countryCode?.toUpperCase();
+  // Geo-Targeting Filter
+  const buyerCountry = api?.localization?.country?.current?.isoCode?.toUpperCase();
   const isCountryExcluded =
     targetCountryList.length > 0 &&
     buyerCountry &&
@@ -260,42 +202,10 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     return null;
   }
 
-  // 2. ENFORCE FIELD LIMIT (Free: 1 field max)
-  if (isOverFieldLimit) {
-    if (isEditor) {
-      return (
-        <Banner status="warning" title="Free Plan Limit (1 Field)">
-          <BlockStack spacing="tight">
-            <Text size="small">
-              The Free Starter plan is limited to 1 active checkout field.
-            </Text>
-            <Text size="small">
-              To use multiple simultaneous fields (e.g., Gift Note + Delivery Instructions), upgrade to the Pro Plan ($4.99/mo) in the Fieldy app dashboard.
-            </Text>
-          </BlockStack>
-        </Banner>
-      );
-    }
-    // In live buyer checkout, do not render extra fields
-    return null;
-  }
-
   const currentLength = (value || '').length;
 
-  // 3. RENDER THE FIELD (with Pro notices in Editor if gated)
   return (
     <BlockStack spacing="tight">
-      {/* Validation interceptor active only on checkout step */}
-      {canEnforceRequired && (
-        <CheckoutValidationInterceptor
-          canEnforceRequired={canEnforceRequired}
-          effectiveType={effectiveType}
-          value={value}
-          title={title}
-          setValidationError={setValidationError}
-        />
-      )}
-
       {/* Notice in Editor if merchant selected a Pro field type on Free plan */}
       {isGatedFieldType && isEditor && (
         <Banner status="info" title="Pro Plan Feature">
@@ -358,8 +268,8 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
       ) : effectiveType === 'date' ? (
         <TextField
           label={title}
-          type="date"
           value={value}
+          placeholder={placeholder || 'YYYY-MM-DD'}
           required={canEnforceRequired}
           error={validationError || undefined}
           onChange={handleChange}
@@ -368,6 +278,7 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
         <TextField
           label={title}
           value={value}
+          placeholder={placeholder || undefined}
           maxLength={maxChars > 0 ? maxChars : undefined}
           required={canEnforceRequired}
           error={validationError || undefined}
@@ -375,23 +286,23 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
         />
       )}
 
-      {/* Sub-label area: Help text on the left, live character counter on the right */}
-      {(helpText || placeholder || maxChars > 0) && (
-        <InlineLayout columns={['fill', 'auto']}>
-          <Text size="small" appearance="subdued">
-            {helpText || placeholder}
-          </Text>
-          {maxChars > 0 ? (
+      {/* Sub-label area: Help text or live character counter */}
+      {(helpText || maxChars > 0) && (
+        <BlockStack spacing="none">
+          {helpText && (
+            <Text size="small" appearance="subdued">
+              {helpText}
+            </Text>
+          )}
+          {maxChars > 0 && (
             <Text
               size="small"
               appearance={currentLength >= maxChars ? 'critical' : 'subdued'}
             >
-              {currentLength} / {maxChars}
+              {currentLength} / {maxChars} characters
             </Text>
-          ) : (
-            <Text size="small" />
           )}
-        </InlineLayout>
+        </BlockStack>
       )}
     </BlockStack>
   );

@@ -1,4 +1,4 @@
-api_version = "2026-01"
+api_version = "2025-10"
 
 [[extensions]]
 name = "Fieldy: Custom Checkout Fields"
@@ -78,4 +78,3 @@ key = "field_help_text"
 type = "single_line_text_field"
 name = "Help Text"
 description = "Small explanation displayed below the field"
-
