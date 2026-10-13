@@ -158,14 +158,14 @@ All images are saved in `assets/listing/` and meet all Shopify visual guidelines
     `Everything in Pro billed annually at $3.33/mo equivalent. Unlimited fields, blocking validation, dropdown surveys, priority support.`
 
 ### Top Features for Partner Dashboard (Copy & paste into the 8 feature slots):
-1. `Unlimited active custom checkout fields`
-2. `Mandatory required field blocking validation`
-3. `Dropdown select surveys for marketing attribution`
-4. `Terms & conditions legal consent checkboxes`
-5. `Number and quantity custom input fields`
+1. `Unlimited active checkout & Thank You fields`
+2. `Required blocking validation & character limits`
+3. `Country-specific geo-targeting filter`
+4. `Delivery & event date selection input`
+5. `Dropdown surveys & legal consent checkboxes`
 6. `Saved directly to native Order Note Attributes`
 7. `Zero third-party database / 100% data privacy`
-8. `Priority developer support and setup assistance`
+8. `No watermark / inherits merchant theme styling`
 
 ---
 

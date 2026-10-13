@@ -6,7 +6,9 @@ import {
   useBuyerJourneyIntercept,
   useAppMetafields,
   useExtensionEditor,
+  useShippingAddress,
   BlockStack,
+  InlineLayout,
   TextField,
   Select,
   Checkbox,
@@ -14,7 +16,7 @@ import {
   Banner,
 } from '@shopify/ui-extensions-react/checkout';
 
-// Module-level registry tracking all CheckoutFields blocks rendered on the current checkout page
+// Module-level registry tracking all CheckoutFields blocks rendered on the current page
 let instanceRegistry = [];
 const registryListeners = new Set();
 
@@ -34,12 +36,69 @@ function getInstanceIndex(id) {
   return instanceRegistry.indexOf(id);
 }
 
+// Sub-component specifically for checkout journey intercept (only rendered on checkout surface)
+function CheckoutValidationInterceptor({
+  canEnforceRequired,
+  effectiveType,
+  value,
+  title,
+  setValidationError,
+}) {
+  useBuyerJourneyIntercept(
+    useCallback(
+      ({ canBlockProgress }) => {
+        if (!canBlockProgress || !canEnforceRequired) {
+          return {
+            behavior: 'allow',
+            perform: () => {
+              setValidationError('');
+            },
+          };
+        }
+
+        const trimmed = (value ?? '').trim();
+        const isInvalid =
+          effectiveType === 'checkbox' ? value !== 'true' : trimmed.length === 0;
+
+        if (isInvalid) {
+          const message = `${title} is required`;
+          return {
+            behavior: 'block',
+            reason: message,
+            errors: [
+              {
+                message,
+              },
+            ],
+            perform: (result) => {
+              if (result.behavior === 'block') {
+                setValidationError(message);
+              }
+            },
+          };
+        }
+
+        return {
+          behavior: 'allow',
+          perform: () => {
+            setValidationError('');
+          },
+        };
+      },
+      [canEnforceRequired, effectiveType, value, title, setValidationError]
+    )
+  );
+
+  return null;
+}
+
 export function CheckoutFieldComponent({ surface = 'checkout' }) {
   const settings = useSettings();
   const applyAttributeChange = useApplyAttributeChange();
   const appMetafields = useAppMetafields() || [];
   const editor = useExtensionEditor();
   const isEditor = Boolean(editor);
+  const shippingAddress = useShippingAddress();
 
   // Stable identifier for this component instance
   const [instanceId] = useState(() => Math.random().toString(36).substring(2, 11));
@@ -82,17 +141,39 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     settings?.field_required === true || settings?.field_required === 'true'
   );
 
+  // Character Limit Setting
+  const rawMaxChars = settings?.max_characters;
+  const maxChars = rawMaxChars ? parseInt(String(rawMaxChars), 10) : 0;
+
+  // Country / Geo-Targeting Setting (e.g., "US, CA" or "GB, DE, FR")
+  const targetCountriesRaw = String(settings?.target_countries || '').trim();
+  const targetCountryList = useMemo(() => {
+    if (!targetCountriesRaw) return [];
+    return targetCountriesRaw
+      .split(/[\s,]+/)
+      .map((c) => c.trim().toUpperCase())
+      .filter(Boolean);
+  }, [targetCountriesRaw]);
+
   // Field Type Gating:
   // Free Starter: text, multiline
-  // Pro Plan: select (dropdown surveys), checkbox (legal consent), number
-  const isProFieldType = rawType === 'select' || rawType === 'checkbox' || rawType === 'number';
+  // Pro Plan: select (dropdown surveys), checkbox (legal consent), number, date
+  const isProFieldType =
+    rawType === 'select' ||
+    rawType === 'checkbox' ||
+    rawType === 'number' ||
+    rawType === 'date';
   const isGatedFieldType = !isProStore && isProFieldType;
   // Fallback for gated types on Free tier: multiline stays multiline, otherwise single-line text
-  const effectiveType = isGatedFieldType ? (rawType === 'multiline' ? 'multiline' : 'text') : rawType;
+  const effectiveType = isGatedFieldType
+    ? rawType === 'multiline'
+      ? 'multiline'
+      : 'text'
+    : rawType;
 
   // Required Field Gating:
-  // Blocking validation is strictly gated to the Pro Plan
-  const canEnforceRequired = isProStore && isRequired;
+  // Blocking validation is strictly gated to the Pro Plan and checkout surface
+  const canEnforceRequired = isProStore && isRequired && surface === 'checkout';
 
   // Determine attribute key
   const attributeKey = useMemo(() => {
@@ -116,52 +197,6 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     }
   }, [savedAttributeValue]);
 
-  // Intercept checkout navigation if required field is empty (Pro Plan only)
-  useBuyerJourneyIntercept(
-    useCallback(
-      ({ canBlockProgress }) => {
-        if (!canBlockProgress || !canEnforceRequired) {
-          return {
-            behavior: 'allow',
-            perform: () => {
-              setValidationError('');
-            },
-          };
-        }
-
-        const trimmed = (value ?? '').trim();
-        const isInvalid =
-          effectiveType === 'checkbox' ? value !== 'true' : trimmed.length === 0;
-
-        if (isInvalid) {
-          const message = `${title} is required`;
-          return {
-            behavior: 'block',
-            reason: message,
-            errors: [
-              {
-                message,
-              },
-            ],
-            perform: (result) => {
-              if (result.behavior === 'block') {
-                setValidationError(message);
-              }
-            },
-          };
-        }
-
-        return {
-          behavior: 'allow',
-          perform: () => {
-            setValidationError('');
-          },
-        };
-      },
-      [canEnforceRequired, value, effectiveType, title]
-    )
-  );
-
   // Parse select options
   const selectOptions = useMemo(() => {
     if (!rawOptions) return [{ value: '', label: '-- Select an option --' }];
@@ -176,10 +211,13 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     ];
   }, [rawOptions]);
 
-  // Save value to order attributes
+  // Save value to order attributes (with character limit enforcement)
   const handleChange = useCallback(
     async (newValue) => {
-      const valStr = String(newValue ?? '');
+      let valStr = String(newValue ?? '');
+      if (maxChars > 0 && valStr.length > maxChars) {
+        valStr = valStr.slice(0, maxChars);
+      }
       setValue(valStr);
 
       // Clear error immediately if user entered valid input
@@ -199,10 +237,30 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
         console.error('Failed to save attribute:', err);
       }
     },
-    [applyAttributeChange, attributeKey, effectiveType]
+    [applyAttributeChange, attributeKey, effectiveType, maxChars]
   );
 
-  // 1. ENFORCE FIELD LIMIT (Free: 1 field max)
+  // 1. GEO-TARGETING FILTER
+  const buyerCountry = shippingAddress?.countryCode?.toUpperCase();
+  const isCountryExcluded =
+    targetCountryList.length > 0 &&
+    buyerCountry &&
+    !targetCountryList.includes(buyerCountry);
+
+  if (isCountryExcluded) {
+    if (isEditor) {
+      return (
+        <Banner status="info" title="Country Filter Active">
+          <Text size="small">
+            This field is configured for: {targetCountryList.join(', ')}. (Current preview country: {buyerCountry})
+          </Text>
+        </Banner>
+      );
+    }
+    return null;
+  }
+
+  // 2. ENFORCE FIELD LIMIT (Free: 1 field max)
   if (isOverFieldLimit) {
     if (isEditor) {
       return (
@@ -222,9 +280,22 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
     return null;
   }
 
-  // 2. RENDER THE FIELD (with Pro notices in Editor if gated)
+  const currentLength = (value || '').length;
+
+  // 3. RENDER THE FIELD (with Pro notices in Editor if gated)
   return (
     <BlockStack spacing="tight">
+      {/* Validation interceptor active only on checkout step */}
+      {canEnforceRequired && (
+        <CheckoutValidationInterceptor
+          canEnforceRequired={canEnforceRequired}
+          effectiveType={effectiveType}
+          value={value}
+          title={title}
+          setValidationError={setValidationError}
+        />
+      )}
+
       {/* Notice in Editor if merchant selected a Pro field type on Free plan */}
       {isGatedFieldType && isEditor && (
         <Banner status="info" title="Pro Plan Feature">
@@ -233,6 +304,8 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
               ? 'Dropdown select surveys require the Pro Plan ($4.99/mo).'
               : rawType === 'checkbox'
               ? 'Mandatory terms & conditions checkboxes require the Pro Plan ($4.99/mo).'
+              : rawType === 'date'
+              ? 'Date selection fields require the Pro Plan ($4.99/mo).'
               : 'Number input fields require the Pro Plan ($4.99/mo).'}
             {' '}On Free Starter, this field defaults to standard text. Upgrade in Fieldy to enable.
           </Text>
@@ -259,7 +332,7 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
           label={title}
           value={value}
           options={selectOptions}
-          required={isRequired}
+          required={canEnforceRequired}
           error={validationError || undefined}
           onChange={handleChange}
         />
@@ -268,6 +341,7 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
           label={title}
           value={value}
           multiline={3}
+          maxLength={maxChars > 0 ? maxChars : undefined}
           required={canEnforceRequired}
           error={validationError || undefined}
           onChange={handleChange}
@@ -281,21 +355,44 @@ export function CheckoutFieldComponent({ surface = 'checkout' }) {
           error={validationError || undefined}
           onChange={handleChange}
         />
+      ) : effectiveType === 'date' ? (
+        <TextField
+          label={title}
+          type="date"
+          value={value}
+          required={canEnforceRequired}
+          error={validationError || undefined}
+          onChange={handleChange}
+        />
       ) : (
         <TextField
           label={title}
           value={value}
+          maxLength={maxChars > 0 ? maxChars : undefined}
           required={canEnforceRequired}
           error={validationError || undefined}
           onChange={handleChange}
         />
       )}
 
-      {(helpText || placeholder) ? (
-        <Text size="small" appearance="subdued">
-          {helpText || placeholder}
-        </Text>
-      ) : null}
+      {/* Sub-label area: Help text on the left, live character counter on the right */}
+      {(helpText || placeholder || maxChars > 0) && (
+        <InlineLayout columns={['fill', 'auto']}>
+          <Text size="small" appearance="subdued">
+            {helpText || placeholder}
+          </Text>
+          {maxChars > 0 ? (
+            <Text
+              size="small"
+              appearance={currentLength >= maxChars ? 'critical' : 'subdued'}
+            >
+              {currentLength} / {maxChars}
+            </Text>
+          ) : (
+            <Text size="small" />
+          )}
+        </InlineLayout>
+      )}
     </BlockStack>
   );
 }

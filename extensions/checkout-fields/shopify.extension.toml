@@ -1,4 +1,4 @@
-api_version = "2025-07"
+api_version = "2026-01"
 
 [[extensions]]
 name = "Fieldy: Custom Checkout Fields"
@@ -9,6 +9,10 @@ type = "ui_extension"
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
 target = "purchase.checkout.block.render"
+
+[[extensions.targeting]]
+module = "./src/ThankYou.jsx"
+target = "purchase.thank-you.block.render"
 
 [extensions.capabilities]
 api_access = true
@@ -31,7 +35,7 @@ description = "Label displayed above the input (e.g., Gift Message, Delivery Not
 key = "field_type"
 type = "single_line_text_field"
 name = "Field Type"
-description = "Free: text, multiline | Pro Plan: select, checkbox, number"
+description = "Free: text, multiline | Pro Plan: select, checkbox, number, date"
 
 [[extensions.settings.fields]]
 key = "field_placeholder"
@@ -52,6 +56,18 @@ name = "Required Field (Pro Plan)"
 description = "Block checkout until filled (Pro Plan feature - also requires 'Allow app to block checkout' toggle above)"
 
 [[extensions.settings.fields]]
+key = "max_characters"
+type = "number_integer"
+name = "Character Limit (Optional)"
+description = "Maximum allowed characters (e.g. 50 for gift tags, 150 for greeting cards). Displays a live counter."
+
+[[extensions.settings.fields]]
+key = "target_countries"
+type = "single_line_text_field"
+name = "Show Only in Countries (Optional)"
+description = "Comma-separated ISO country codes (e.g., US, CA or GB, DE, FR). Leave blank to show everywhere."
+
+[[extensions.settings.fields]]
 key = "select_options"
 type = "multi_line_text_field"
 name = "Dropdown Options (Pro Plan)"
@@ -62,3 +78,4 @@ key = "field_help_text"
 type = "single_line_text_field"
 name = "Help Text"
 description = "Small explanation displayed below the field"
+
