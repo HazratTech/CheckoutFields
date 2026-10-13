@@ -15,13 +15,14 @@ export default reactExtension(
 function ThankYouComponent() {
   const settings = useSettings();
 
-  const title = String(settings?.field_title || 'Custom Note');
+  const title = String(settings?.field_title || '').trim() || 'Custom Note';
   const attributeKey =
-    settings?.attribute_key ||
+    (settings?.attribute_key && String(settings.attribute_key).trim()) ||
     title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_|_$/g, '');
+      .replace(/^_|_$/g, '') ||
+    'custom_note';
   const [val] = useAttributeValues([attributeKey]);
 
   if (!val) {

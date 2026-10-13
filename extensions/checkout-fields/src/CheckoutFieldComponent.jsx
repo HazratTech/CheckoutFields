@@ -24,19 +24,21 @@ export function CheckoutFieldComponent() {
   const api = useApi();
 
   // Subscription plan check: Strictly requires shop metafield checkout_fields.plan === 'pro'
-  const planEntry = appMetafields.find(
-    (m) =>
-      (m.metafield?.namespace === 'checkout_fields' && m.metafield?.key === 'plan') ||
-      (m.namespace === 'checkout_fields' && m.key === 'plan')
-  );
+  const planEntry = Array.isArray(appMetafields)
+    ? appMetafields.find(
+        (m) =>
+          (m?.metafield?.namespace === 'checkout_fields' && m?.metafield?.key === 'plan') ||
+          (m?.namespace === 'checkout_fields' && m?.key === 'plan')
+      )
+    : undefined;
   const rawPlanValue = planEntry?.metafield?.value ?? planEntry?.value;
   const isProStore = String(rawPlanValue || '').toLowerCase().trim() === 'pro';
 
-  // Settings from Checkout Editor
-  const title = String(settings?.field_title || 'Custom Field');
+  // Settings from Checkout Editor with safe defaults
+  const title = String(settings?.field_title || '').trim() || 'Custom Field';
   const rawType = String(settings?.field_type || 'text').toLowerCase().trim();
-  const placeholder = settings?.field_placeholder ? String(settings.field_placeholder) : '';
-  const helpText = settings?.field_help_text ? String(settings.field_help_text) : '';
+  const placeholder = settings?.field_placeholder ? String(settings.field_placeholder).trim() : '';
+  const helpText = settings?.field_help_text ? String(settings.field_help_text).trim() : '';
   const rawOptions = settings?.select_options ? String(settings.select_options) : '';
   const isRequired = Boolean(
     settings?.field_required === true || settings?.field_required === 'true'
@@ -99,12 +101,7 @@ export function CheckoutFieldComponent() {
     useCallback(
       ({ canBlockProgress }) => {
         if (!canBlockProgress || !canEnforceRequired) {
-          return {
-            behavior: 'allow',
-            perform: () => {
-              setValidationError('');
-            },
-          };
+          return { behavior: 'allow' };
         }
 
         const trimmed = (value ?? '').trim();
@@ -129,12 +126,7 @@ export function CheckoutFieldComponent() {
           };
         }
 
-        return {
-          behavior: 'allow',
-          perform: () => {
-            setValidationError('');
-          },
-        };
+        return { behavior: 'allow' };
       },
       [canEnforceRequired, value, effectiveType, title]
     )
@@ -170,11 +162,13 @@ export function CheckoutFieldComponent() {
       }
 
       try {
-        await applyAttributeChange({
-          type: 'updateAttribute',
-          key: attributeKey,
-          value: valStr,
-        });
+        if (typeof applyAttributeChange === 'function') {
+          await applyAttributeChange({
+            type: 'updateAttribute',
+            key: attributeKey,
+            value: valStr,
+          });
+        }
       } catch (err) {
         console.error('Failed to save attribute:', err);
       }
@@ -182,23 +176,14 @@ export function CheckoutFieldComponent() {
     [applyAttributeChange, attributeKey, effectiveType, maxChars]
   );
 
-  // Geo-Targeting Filter
+  // Geo-Targeting Filter (active only in live buyer checkout, never hide in editor)
   const buyerCountry = api?.localization?.country?.current?.isoCode?.toUpperCase();
   const isCountryExcluded =
     targetCountryList.length > 0 &&
     buyerCountry &&
     !targetCountryList.includes(buyerCountry);
 
-  if (isCountryExcluded) {
-    if (isEditor) {
-      return (
-        <Banner status="info" title="Country Filter Active">
-          <Text size="small">
-            This field is configured for: {targetCountryList.join(', ')}. (Current preview country: {buyerCountry})
-          </Text>
-        </Banner>
-      );
-    }
+  if (isCountryExcluded && !isEditor) {
     return null;
   }
 
@@ -206,6 +191,15 @@ export function CheckoutFieldComponent() {
 
   return (
     <BlockStack spacing="tight">
+      {/* Notice in Editor if geo-targeting is active */}
+      {isCountryExcluded && isEditor && (
+        <Banner status="info" title="Country Filter Active">
+          <Text size="small">
+            This field will only display to buyers in: {targetCountryList.join(', ')}. (Preview country: {buyerCountry || 'Global'}).
+          </Text>
+        </Banner>
+      )}
+
       {/* Notice in Editor if merchant selected a Pro field type on Free plan */}
       {isGatedFieldType && isEditor && (
         <Banner status="info" title="Pro Plan Feature">
