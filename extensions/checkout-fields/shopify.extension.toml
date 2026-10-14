@@ -1,7 +1,7 @@
 api_version = "2025-10"
 
 [[extensions]]
-name = "Fieldy: Custom Checkout Fields"
+name = "Fieldy: Custom Field & Note"
 handle = "checkout-fields"
 uid = "914da4f3-b78e-a869-6db4-7a34f741f346011d6bc7"
 type = "ui_extension"
@@ -13,6 +13,10 @@ target = "purchase.checkout.block.render"
 [[extensions.targeting]]
 module = "./src/ThankYou.jsx"
 target = "purchase.thank-you.block.render"
+
+[[extensions.targeting]]
+module = "./src/OrderStatus.jsx"
+target = "customer-account.order-status.block.render"
 
 [extensions.capabilities]
 api_access = true
@@ -35,7 +39,10 @@ description = "Label displayed above the input (e.g., Gift Message, Delivery Not
 key = "field_type"
 type = "single_line_text_field"
 name = "Field Type"
-description = "Free: text, multiline | Pro Plan: select, checkbox, number, date"
+description = "Choose input type. Free: text, multiline | Pro: select, checkbox, number, date"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["text", "multiline", "select", "checkbox", "number", "date"]'
 
 [[extensions.settings.fields]]
 key = "field_placeholder"
@@ -68,13 +75,51 @@ name = "Show Only in Countries (Optional)"
 description = "Comma-separated ISO country codes (e.g., US, CA or GB, DE, FR). Leave blank to show everywhere."
 
 [[extensions.settings.fields]]
+key = "option_1"
+type = "single_line_text_field"
+name = "Dropdown Option 1 (Pro Plan)"
+description = "First choice in the dropdown menu (e.g. Instagram, Yes, Morning)"
+
+[[extensions.settings.fields]]
+key = "option_2"
+type = "single_line_text_field"
+name = "Dropdown Option 2 (Pro Plan)"
+description = "Second choice in the dropdown menu (e.g. TikTok, No, Afternoon)"
+
+[[extensions.settings.fields]]
+key = "option_3"
+type = "single_line_text_field"
+name = "Dropdown Option 3 (Pro Plan)"
+description = "Third choice in the dropdown menu (e.g. Google Search, Evening)"
+
+[[extensions.settings.fields]]
+key = "option_4"
+type = "single_line_text_field"
+name = "Dropdown Option 4 (Pro Plan)"
+description = "Fourth choice in the dropdown menu (e.g. Friend / Family)"
+
+[[extensions.settings.fields]]
+key = "option_5"
+type = "single_line_text_field"
+name = "Dropdown Option 5 (Pro Plan)"
+description = "Fifth choice in the dropdown menu (e.g. Other / Not Listed)"
+
+[[extensions.settings.fields]]
+key = "option_6"
+type = "single_line_text_field"
+name = "Dropdown Option 6 (Pro Plan)"
+description = "Sixth choice in the dropdown menu (Optional)"
+
+[[extensions.settings.fields]]
 key = "select_options"
 type = "multi_line_text_field"
-name = "Dropdown Options (Pro Plan)"
-description = "Comma or newline separated options (Used only when Field Type is select)"
+name = "Bulk / Paste Options (Optional)"
+description = "Or paste additional options separated by newlines or commas"
 
 [[extensions.settings.fields]]
 key = "field_help_text"
 type = "single_line_text_field"
 name = "Help Text"
 description = "Small explanation displayed below the field"
+
+

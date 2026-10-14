@@ -1,0 +1,76 @@
+api_version = "2025-10"
+
+[[extensions]]
+name = "Fieldy: Trust Badges & Guarantees"
+handle = "trust-badges"
+uid = "a0d578a7-bb59-dbca-fa12-1d5486c72d3379072676"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[[extensions.targeting]]
+module = "./src/ThankYou.jsx"
+target = "purchase.thank-you.block.render"
+
+[[extensions.targeting]]
+module = "./src/OrderStatus.jsx"
+target = "customer-account.order-status.block.render"
+
+[extensions.capabilities]
+api_access = true
+network_access = false
+block_progress = false
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "trust_layout"
+type = "single_line_text_field"
+name = "Layout Style"
+description = "strip (inline with dots), card (3-column card), grid (clean columns), or list (vertical)"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["strip", "card", "grid", "list"]'
+
+[[extensions.settings.fields]]
+key = "trust_title"
+type = "single_line_text_field"
+name = "Section Heading"
+description = "Optional heading (e.g. 'Why Shop With Us?' or leave blank to hide)"
+
+[[extensions.settings.fields]]
+key = "trust_badge_1"
+type = "single_line_text_field"
+name = "Badge 1: Headline"
+description = "Default: 256-Bit SSL Secure"
+
+[[extensions.settings.fields]]
+key = "trust_badge_1_sub"
+type = "single_line_text_field"
+name = "Badge 1: Subtitle"
+description = "Default: Bank-Grade Encryption"
+
+[[extensions.settings.fields]]
+key = "trust_badge_2"
+type = "single_line_text_field"
+name = "Badge 2: Headline"
+description = "Default: 30-Day Money-Back"
+
+[[extensions.settings.fields]]
+key = "trust_badge_2_sub"
+type = "single_line_text_field"
+name = "Badge 2: Subtitle"
+description = "Default: Hassle-Free Returns"
+
+[[extensions.settings.fields]]
+key = "trust_badge_3"
+type = "single_line_text_field"
+name = "Badge 3: Headline"
+description = "Default: Fast Delivery"
+
+[[extensions.settings.fields]]
+key = "trust_badge_3_sub"
+type = "single_line_text_field"
+name = "Badge 3: Subtitle"
+description = "Default: Tracked & Insured"

@@ -1,146 +1,155 @@
 ---
 name: checkout-fields-extensibility
-description: "Comprehensive guide and engineering best practices for building, extending, and testing Shopify Checkout UI Extensions in the Fieldy: Custom Checkout Fields app. Use when working on checkout extension components, extension targets, settings schemas (shopify.extension.toml), buyer journey intercepts, attribute changes, order note attributes, or testing checkout flows."
-compatibility: Requires Node.js and Shopify CLI
+description: "Comprehensive guide and engineering best practices for building, extending, and testing Shopify Checkout UI Extensions in the Fieldy: Custom Checkout Fields app under the 2025-10 Polaris Web Components architecture."
+compatibility: Requires Node.js and Shopify CLI (API Version 2025-10+)
 metadata:
   author: Fieldy Team
-  version: "1.0.0"
+  version: "2.0.0"
 ---
 
-# Checkout Fields Extensibility Skill Guide
+# Checkout Fields Extensibility Skill Guide (2025-10 Architecture)
 
-This skill provides specialized rules, design patterns, and implementation practices for extending **Fieldy: Custom Checkout Fields**.
+This skill provides specialized rules, design patterns, and implementation practices for extending **Fieldy: Custom Checkout Fields** under Shopify's mandatory `2025-10` checkout runtime.
 
 ---
 
-## 1. Core Architecture & Mental Model
+## 1. Core Architecture & Runtime Rules
 
-Fieldy uses Shopify's official **Checkout UI Extensibility** framework (`@shopify/ui-extensions-react/checkout`):
+Fieldy runs on Shopify's official **Checkout Extensibility 2025-10+** framework:
 
-1. **Zero External Storage for Buyer Inputs:**
-   - Buyer responses are saved directly into native Shopify Order Note Attributes (`order.customAttributes`) via `useApplyAttributeChange()`.
-   - This ensures 100% compatibility with fulfillment platforms (ShipStation, Klaviyo, ERPs) and zero database overhead.
+1. **Zero-Argument Entry Function:**
+   - Shopify CLI generates: `shopify.extend(target, (...args) => Target_0(...args))`.
+   - Shopify's checkout worker invokes the entry function with `args.length === 0`.
+   - Entry point exports a default function that mounts directly into `document.body`:
+     ```javascript
+     export default function extension(...args) {
+       // Clear previous mount
+       while (document.body.firstChild) {
+         document.body.removeChild(document.body.firstChild);
+       }
+       // Mount Polaris Web Components (<s-*>)
+     }
+     ```
 
-2. **Native Polaris UI Components Only:**
+2. **Native Polaris Web Components Only (`<s-*>`):**
    - Custom CSS is strictly disallowed by Shopify Checkout.
-   - Use only native components: `<BlockStack>`, `<InlineStack>`, `<TextField>`, `<Select>`, `<Checkbox>`, `<Banner>`, `<Text>`, `<Divider>`.
-   - These automatically adapt to the merchant's theme fonts, colors, border radii, and dark/light modes.
+   - Elements are `RemoteElement` instances in `remote-dom` — **never access `.style` or `.style.cssText`** (throws `TypeError: Cannot set properties of undefined (setting 'cssText')`).
+   - Use native components: `<s-stack>`, `<s-text-field>`, `<s-select>`, `<s-option>`, `<s-checkbox>`, `<s-banner>`, `<s-text>`.
 
-3. **Multi-Target Rendering:**
-   - `purchase.checkout.block.render`: Active checkout steps (Information, Shipping, Payment) on Shopify Plus.
-   - `purchase.thank-you.block.render`: Thank You confirmation page (all Shopify plans, including Basic, Shopify, Advanced).
-   - `customer-account.order-status.block.render`: Order Status / Tracking page (all Shopify plans).
+3. **Zero External Storage for Buyer Inputs:**
+   - Buyer responses are saved directly into native Shopify Order Note Attributes (`order.customAttributes`) via `shopify.applyAttributeChange()`.
+   - 100% compatibility with fulfillment platforms (ShipStation, Klaviyo, ERPs) and zero database overhead.
+
+4. **Multi-Target Rendering:**
+   - `purchase.checkout.block.render`: Active checkout steps (Information, Shipping, Payment).
+   - `purchase.thank-you.block.render`: Thank You confirmation page.
+   - `customer-account.order-status.block.render`: Order Status / Tracking page.
 
 ---
 
-## 2. Key Hooks & APIs
+## 2. Key APIs & State Helpers
 
-### A. Saving Order Note Attributes
-```tsx
-import { useApplyAttributeChange, useAttributeValues } from '@shopify/ui-extensions-react/checkout';
+### A. Reading Signals Safely
+In 2025-10, `shopify.settings`, `shopify.attributes`, and `shopify.appMetafields` are Signal objects:
+```javascript
+function getSignalValue(signal) {
+  if (!signal) return null;
+  if (typeof signal === 'object') {
+    if ('value' in signal) return signal.value;
+    if ('current' in signal) return signal.current;
+    if ('_private_4_value' in signal) return signal._private_4_value;
+  }
+  return signal;
+}
+```
 
-const applyAttributeChange = useApplyAttributeChange();
-const [savedValue] = useAttributeValues([attributeKey]);
-
-// To persist buyer input:
-await applyAttributeChange({
+### B. Saving Order Note Attributes
+```javascript
+await shopify.applyAttributeChange({
   type: 'updateAttribute',
   key: attributeKey,
   value: String(newValue),
 });
 ```
 
-### B. Blocking Progress (Mandatory Validation)
-```tsx
-import { useBuyerJourneyIntercept } from '@shopify/ui-extensions-react/checkout';
-
-useBuyerJourneyIntercept(({ canBlockProgress }) => {
-  if (!canBlockProgress || !isRequired) {
-    return { behavior: 'allow' };
-  }
-
-  const isInvalid = !value || value.trim().length === 0;
-  if (isInvalid) {
-    return {
-      behavior: 'block',
-      reason: `${fieldTitle} is required`,
-      errors: [{ message: `${fieldTitle} is required` }],
-      perform: (result) => {
-        if (result.behavior === 'block') {
-          setValidationError(`${fieldTitle} is required`);
-        }
-      },
-    };
-  }
-
-  return { behavior: 'allow' };
-});
-```
-
-### C. Reading Merchant Settings
-```tsx
-import { useSettings } from '@shopify/ui-extensions-react/checkout';
-
-const settings = useSettings();
-const title = settings?.field_title || 'Custom Note';
-const placeholder = settings?.field_placeholder || '';
-const isRequired = Boolean(settings?.field_required);
+### C. Live Checkout Editor Subscription
+To reflect merchant setting changes live in the Checkout Editor preview:
+```javascript
+if (shopify.settings && typeof shopify.settings.subscribe === 'function') {
+  shopify.settings.subscribe((newSettings) => {
+    extension(...args); // Re-renders preview
+  });
+}
 ```
 
 ### D. Reading Plan Status (Metafield Sync)
-```tsx
-import { useAppMetafields } from '@shopify/ui-extensions-react/checkout';
-
-const appMetafields = useAppMetafields() || [];
-const planEntry = appMetafields.find(
-  (m) =>
-    (m.metafield?.namespace === 'checkout_fields' && m.metafield?.key === 'plan') ||
-    (m.namespace === 'checkout_fields' && m.key === 'plan')
-);
-const isProStore = String(planEntry?.metafield?.value || '').toLowerCase().trim() === 'pro';
+```javascript
+const rawMetafields = getSignalValue(shopify.appMetafields) || [];
+const planMetafield = rawMetafields.find(m => {
+  const ns = m?.metafield?.namespace || m?.namespace;
+  const k = m?.metafield?.key || m?.key;
+  return ns === 'checkout_fields' && k === 'plan';
+});
+const isPro = String(planMetafield?.metafield?.value || planMetafield?.value || '').toLowerCase().trim() === 'pro';
 ```
 
 ---
 
-## 3. High-Value Feature Implementation Patterns
+## 3. Web Component Implementation Patterns
 
-### Pattern 1: Conditional Display Rules
-Show fields only when certain criteria are met:
-- **Shipping Destination**: Use `useShippingAddress()` to show VAT/Tax ID only for specific countries (e.g., EU, UK, Brazil).
-- **Cart Total / Currency**: Use `useSubtotalAmount()` to show gift wrap options only on qualifying order values.
-- **Cart Items**: Use `useCartLines()` to show personalization fields only when certain product tags are present.
+### Pattern 1: Text Field (Free & Pro Text Types)
+```javascript
+const input = document.createElement('s-text-field');
+input.setAttribute('label', title);
+if (placeholder) input.setAttribute('placeholder', placeholder);
+if (helpText) input.setAttribute('help-text', helpText);
+if (savedValue) input.setAttribute('value', savedValue);
+if (maxChars > 0) input.setAttribute('maxlength', String(maxChars));
+if (isRequired && isPro) input.setAttribute('required', 'true');
 
-### Pattern 2: Character Limits & Live Counters
-For engraving, gift notes, or delivery notes:
-```tsx
-const maxLength = Number(settings?.max_length) || 150;
-const currentLength = (value || '').length;
-
-<TextField
-  label={title}
-  value={value}
-  maxLength={maxLength}
-  onChange={handleChange}
-/>
-<Text size="small" appearance="subdued">
-  {currentLength} / {maxLength} characters
-</Text>
+input.addEventListener('change', (e) => {
+  const val = e?.target?.value ?? input.getAttribute('value') ?? '';
+  saveAttribute(val);
+});
+stack.appendChild(input);
 ```
 
-### Pattern 3: Multi-Target Thank You / Order Status Support
-In `shopify.extension.toml`:
-```toml
-[[extensions.targeting]]
-module = "./src/Checkout.jsx"
-target = "purchase.checkout.block.render"
+### Pattern 2: Dropdown Select
+```javascript
+const select = document.createElement('s-select');
+select.setAttribute('label', title);
+if (savedValue) select.setAttribute('value', savedValue);
 
-[[extensions.targeting]]
-module = "./src/Checkout.jsx"
-target = "purchase.thank-you.block.render"
+const defaultOpt = document.createElement('s-option');
+defaultOpt.setAttribute('value', '');
+defaultOpt.textContent = '-- Select an option --';
+select.appendChild(defaultOpt);
 
-[[extensions.targeting]]
-module = "./src/Checkout.jsx"
-target = "customer-account.order-status.block.render"
+for (const opt of optionsList) {
+  const optEl = document.createElement('s-option');
+  optEl.setAttribute('value', opt);
+  optEl.textContent = opt;
+  if (savedValue === opt) optEl.setAttribute('selected', 'true');
+  select.appendChild(optEl);
+}
+
+select.addEventListener('change', (e) => {
+  const val = e?.target?.value ?? '';
+  saveAttribute(val);
+});
+stack.appendChild(select);
+```
+
+### Pattern 3: Checkbox Toggle
+```javascript
+const checkbox = document.createElement('s-checkbox');
+checkbox.textContent = title;
+if (savedValue === 'true') checkbox.setAttribute('checked', 'true');
+checkbox.addEventListener('change', (e) => {
+  const isChecked = Boolean(e?.target?.checked);
+  saveAttribute(isChecked ? 'true' : 'false');
+});
+stack.appendChild(checkbox);
 ```
 
 ---
@@ -148,12 +157,9 @@ target = "customer-account.order-status.block.render"
 ## 4. Testing & Deployment Commands
 
 ```bash
-# Test extension locally with mock checkout
-npm run dev
+# Verify extension bundle (instant ~60ms build)
+npx shopify app build
 
-# Deploy extension updates to Shopify
-npm run deploy
-
-# Build web application bundle
-npm run build
+# Release extension updates to users / partner stores
+npx shopify app deploy --allow-updates --message "Release description"
 ```

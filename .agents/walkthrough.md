@@ -15,18 +15,21 @@ We have fully scaffolded and verified each component of **CheckoutFields** step 
   - Step-by-step drag-and-drop checkout installation instructions.
   - Pro subscription status card & upgrade trigger.
 
-### B. Checkout UI Extension
+### B. Checkout UI Extension (Release v26: 2025-10 Polaris Web Components)
 - **[shopify.extension.toml](file:///Volumes/SSD/Coding/website/Shopify%20App/CheckoutFields/extensions/checkout-fields/shopify.extension.toml)**:
+  - `api_version = "2025-10"` (Mandatory API version enforced by Shopify Partners release validator).
   - Targets configured for both Shopify Plus and Non-Plus:
     - `purchase.checkout.block.render` (Checkout steps: Information, Shipping, Payment for Plus stores)
     - `purchase.thank-you.block.render` (Thank You page for all plans)
-    - `customer-account.order-status.block.render` (Order Status page for all plans)
-  - Merchant settings schema defined for live Checkout Editor customization (Title, Type, Placeholder, Required toggle, Attribute Key, Select Options, Help Text).
+  - Merchant settings schema defined for live Checkout Editor customization (Title, Type, Placeholder, Required toggle, Attribute Key, Select Options, Help Text, Max Characters, Target Countries).
 - **[Checkout.jsx](file:///Volumes/SSD/Coding/website/Shopify%20App/CheckoutFields/extensions/checkout-fields/src/Checkout.jsx)**:
-  - Native UI components (`<BlockStack>`, `<TextField>`, `<Select>`, `<Checkbox>`, `<Banner>`, `<Text>`).
-  - `useApplyAttributeChange` integration to write customer inputs directly to `order.customAttributes` ($0 database overhead).
-  - `useBuyerJourneyIntercept` to block progression if a required field is left empty.
-  - Reactive sync with existing attributes and visual success indicators on the Thank You page.
+  - Direct 2025-10 DOM entry point (`export default function extension(...args)`) mounting into `document.body`.
+  - Native Polaris Web Components (`<s-stack>`, `<s-text-field>`, `<s-select>`, `<s-option>`, `<s-checkbox>`, `<s-banner>`, `<s-text>`).
+  - `shopify.applyAttributeChange` integration to write customer inputs directly to `order.customAttributes` ($0 database overhead).
+  - Reactive sync with merchant settings via `shopify.settings.subscribe(...)`.
+  - Pro plan feature gating and country geo-targeting previews.
+- **[ThankYou.jsx](file:///Volumes/SSD/Coding/website/Shopify%20App/CheckoutFields/extensions/checkout-fields/src/ThankYou.jsx)**:
+  - Displays customer-entered attributes on the Thank You confirmation page via `<s-banner>` and `<s-text>`.
 
 ---
 

@@ -1,0 +1,43 @@
+api_version = "2025-10"
+
+[[extensions]]
+name = "Fieldy: Free Shipping Bar"
+handle = "free-shipping-bar"
+uid = "5af6b22f-55d7-98b1-7ac3-639c56be3a05c2200a6a"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[[extensions.targeting]]
+module = "./src/ThankYou.jsx"
+target = "purchase.thank-you.block.render"
+
+[[extensions.targeting]]
+module = "./src/OrderStatus.jsx"
+target = "customer-account.order-status.block.render"
+
+[extensions.capabilities]
+api_access = true
+network_access = false
+block_progress = false
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "shipping_goal"
+type = "number_integer"
+name = "Free Shipping Goal Amount"
+description = "Target cart subtotal to unlock free shipping (e.g. 50 or 100)"
+
+[[extensions.settings.fields]]
+key = "shipping_away_message"
+type = "single_line_text_field"
+name = "Progress Message"
+description = "Message when threshold not yet reached. Use {amount} placeholder (e.g. 'You are only {amount} away from FREE shipping! 🚚')"
+
+[[extensions.settings.fields]]
+key = "shipping_unlocked_message"
+type = "single_line_text_field"
+name = "Unlocked Message"
+description = "Celebration message when free shipping goal is reached (e.g. '🎉 Congratulations! You have unlocked FREE shipping!')"

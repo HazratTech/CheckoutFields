@@ -1,0 +1,136 @@
+api_version = "2025-10"
+
+[[extensions]]
+name = "Fieldy: Payment & Courier Badges"
+handle = "payment-icons"
+uid = "a5c76e46-d1f3-03eb-d4a2-6a51ab0ba8a9e5296398"
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/Checkout.jsx"
+target = "purchase.checkout.block.render"
+
+[[extensions.targeting]]
+module = "./src/ThankYou.jsx"
+target = "purchase.thank-you.block.render"
+
+[[extensions.targeting]]
+module = "./src/OrderStatus.jsx"
+target = "customer-account.order-status.block.render"
+
+[extensions.capabilities]
+api_access = true
+network_access = false
+block_progress = false
+
+[extensions.settings]
+[[extensions.settings.fields]]
+key = "icons_title"
+type = "single_line_text_field"
+name = "Heading Title"
+description = "Text above badges (e.g. 'Guaranteed Safe & Secure Checkout')"
+
+[[extensions.settings.fields]]
+key = "icons_alignment"
+type = "single_line_text_field"
+name = "Alignment"
+description = "center, start, end"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["center", "start", "end"]'
+
+[[extensions.settings.fields]]
+key = "max_in_row"
+type = "number_integer"
+name = "Max Badges Per Row (Default: 6)"
+description = "Maximum badges to display in a single row before wrapping (default: 6)"
+
+[[extensions.settings.fields]]
+key = "icon_1"
+type = "single_line_text_field"
+name = "Badge 1"
+description = "First badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_2"
+type = "single_line_text_field"
+name = "Badge 2"
+description = "Second badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_3"
+type = "single_line_text_field"
+name = "Badge 3"
+description = "Third badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_4"
+type = "single_line_text_field"
+name = "Badge 4"
+description = "Fourth badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_5"
+type = "single_line_text_field"
+name = "Badge 5"
+description = "Fifth badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_6"
+type = "single_line_text_field"
+name = "Badge 6"
+description = "Sixth badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_7"
+type = "single_line_text_field"
+name = "Badge 7"
+description = "Seventh badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_8"
+type = "single_line_text_field"
+name = "Badge 8"
+description = "Eighth badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_9"
+type = "single_line_text_field"
+name = "Badge 9"
+description = "Ninth badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
+
+[[extensions.settings.fields]]
+key = "icon_10"
+type = "single_line_text_field"
+name = "Badge 10"
+description = "Tenth badge icon"
+  [[extensions.settings.fields.validations]]
+  name = "choices"
+  value = '["none", "visa", "mastercard", "amex", "paypal", "apple_pay", "google_pay", "shop_pay", "klarna", "afterpay", "venmo", "cod", "dhl", "fedex", "ups", "usps", "royal_mail", "dpd"]'
