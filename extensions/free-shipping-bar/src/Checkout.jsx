@@ -69,38 +69,79 @@ export default function extension(...args) {
   const percent = Math.min(100, Math.max(0, Math.round((subtotalRaw / goal) * 100)));
 
   if (isUnlocked) {
-    // Native Shopify Success Banner - Clean, celebratory, no awkward progress bar strike-through
-    const banner = document.createElement('s-banner');
-    banner.setAttribute('tone', 'success');
-    banner.setAttribute('heading', unlockedMsg);
+    const stack = document.createElement('s-stack');
+    stack.setAttribute('direction', 'block');
+    stack.setAttribute('gap', 'extra-tight');
+    stack.setAttribute('alignItems', 'center');
+    stack.setAttribute('align-items', 'center');
+
+    const headerRow = document.createElement('s-stack');
+    headerRow.setAttribute('direction', 'inline');
+    headerRow.setAttribute('gap', 'small');
+    headerRow.setAttribute('alignItems', 'center');
+    headerRow.setAttribute('align-items', 'center');
+
+    const checkIcon = document.createElement('s-icon');
+    checkIcon.setAttribute('type', 'check-circle-filled');
+    checkIcon.setAttribute('tone', 'success');
+    checkIcon.setAttribute('size', 'small');
+    headerRow.appendChild(checkIcon);
+
+    const titleEl = document.createElement('s-text');
+    titleEl.setAttribute('size', 'small');
+    titleEl.setAttribute('emphasis', 'bold');
+    titleEl.textContent = unlockedMsg;
+    headerRow.appendChild(titleEl);
+
+    stack.appendChild(headerRow);
 
     const helper = document.createElement('s-text');
-    helper.setAttribute('size', 'small');
+    helper.setAttribute('size', 'extra-small');
+    helper.setAttribute('tone', 'subdued');
     helper.textContent = 'Free shipping has been automatically applied to your checkout!';
-    banner.appendChild(helper);
+    stack.appendChild(helper);
 
-    document.body.appendChild(banner);
+    document.body.appendChild(stack);
   } else {
     // Clean away message (strip redundant duplicate truck emojis)
     let cleanAwayText = awayTpl.replace('{amount}', formattedRemaining);
     cleanAwayText = cleanAwayText.replace(/^🚚\s*/, '').replace(/\s*🚚$/, '').trim();
 
-    // Native Shopify Informational Banner with integrated progress bar & dual stats
-    const banner = document.createElement('s-banner');
-    banner.setAttribute('tone', 'info');
-    banner.setAttribute('heading', cleanAwayText);
-
+    // Clean, modern, borderless shipping progress component
     const contentStack = document.createElement('s-stack');
     contentStack.setAttribute('direction', 'block');
     contentStack.setAttribute('gap', 'tight');
 
+    // Header row with truck icon & clean bold message
+    const headerRow = document.createElement('s-stack');
+    headerRow.setAttribute('direction', 'inline');
+    headerRow.setAttribute('gap', 'small');
+    headerRow.setAttribute('alignItems', 'center');
+    headerRow.setAttribute('align-items', 'center');
+
+    const truckIcon = document.createElement('s-icon');
+    truckIcon.setAttribute('type', 'truck');
+    truckIcon.setAttribute('tone', 'subdued');
+    truckIcon.setAttribute('size', 'small');
+    headerRow.appendChild(truckIcon);
+
+    const titleEl = document.createElement('s-text');
+    titleEl.setAttribute('size', 'small');
+    titleEl.setAttribute('emphasis', 'bold');
+    titleEl.textContent = cleanAwayText;
+    headerRow.appendChild(titleEl);
+
+    contentStack.appendChild(headerRow);
+
+    // Progress bar
     const progress = document.createElement('s-progress');
     progress.setAttribute('value', String(percent));
     progress.setAttribute('max', '100');
-    progress.setAttribute('tone', 'info');
+    progress.setAttribute('tone', 'primary');
     progress.setAttribute('accessibilityLabel', `${percent}% towards free shipping goal`);
     contentStack.appendChild(progress);
 
+    // Footer stats row
     const footerRow = document.createElement('s-stack');
     footerRow.setAttribute('direction', 'inline');
     footerRow.setAttribute('justifyContent', 'space-between');
@@ -121,8 +162,6 @@ export default function extension(...args) {
     footerRow.appendChild(rightText);
 
     contentStack.appendChild(footerRow);
-    banner.appendChild(contentStack);
-
-    document.body.appendChild(banner);
+    document.body.appendChild(contentStack);
   }
 }

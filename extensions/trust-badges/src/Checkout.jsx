@@ -160,7 +160,7 @@ function buildTrustBadges(rawSettings) {
     listCard.appendChild(listStack);
     container.appendChild(listCard);
   } else {
-    // Default: 'strip' (The clean, seamless inline security strip with bullet separators)
+    // Default: 'strip' (Clean, seamless, unboxed inline security strip)
     const stripRow = document.createElement('s-stack');
     stripRow.setAttribute('direction', 'inline');
     stripRow.setAttribute('gap', 'base');
@@ -173,13 +173,14 @@ function buildTrustBadges(rawSettings) {
       if (idx > 0) {
         const bullet = document.createElement('s-text');
         bullet.setAttribute('tone', 'subdued');
-        bullet.textContent = '•';
+        bullet.setAttribute('size', 'small');
+        bullet.textContent = '  •  ';
         stripRow.appendChild(bullet);
       }
 
       const itemStack = document.createElement('s-stack');
       itemStack.setAttribute('direction', 'inline');
-      itemStack.setAttribute('gap', 'extra-tight');
+      itemStack.setAttribute('gap', 'tight');
       itemStack.setAttribute('alignItems', 'center');
       itemStack.setAttribute('align-items', 'center');
 
@@ -190,10 +191,10 @@ function buildTrustBadges(rawSettings) {
       itemStack.appendChild(icon);
 
       const titleEl = document.createElement('s-text');
-      titleEl.setAttribute('size', 'extra-small');
+      titleEl.setAttribute('size', 'small');
       titleEl.setAttribute('emphasis', 'bold');
       titleEl.setAttribute('tone', 'subdued');
-      titleEl.textContent = item.title;
+      titleEl.textContent = ` ${item.title}`;
       itemStack.appendChild(titleEl);
 
       stripRow.appendChild(itemStack);
